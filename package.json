@@ -2,15 +2,22 @@
   "name": "dwn-express",
   "version": "1.0.0",
   "description": "",
-  "main": "source/index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node source/index.js"
+    "start": "node esbuild.mjs && node --enable-source-maps ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.1"
+    "classic-level": "^1.2.0",
+    "dwn-sdk": "link:../dwn-sdk-js",
+    "express": "^4.18.1",
+    "leveldown": "^6.1.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.51"
   }
 }
