@@ -1,4 +1,5 @@
 import { DWN } from "dwn-sdk";
+import { Interface } from "dwn-sdk/dist/esm/interfaces/types";
 import express, { Application, Request, Response, NextFunction } from "express";
 
 
@@ -6,8 +7,12 @@ const app: Application = express();
 app.use(express.json());
 const port = 8080; // default port to listen
 
+const schemas = {} as { [key: string]: any };
+
+schemas['FeatureDetectionRead'] = true;
+
 const config = {
-  interfaces:  [{methodHandlers: [], schemas: ["SocialMediaPosting"]}]
+  interfaces:  [{methodHandlers: [], schemas: schemas}]
 }
 
 // TODO: maybe wrapp this in a class
@@ -19,7 +24,7 @@ app.get("/ping", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  res.json(dwn.processMessage(req.body.messages[0], {"tenant": req.body.target }));
+  res.json(dwn.processRequest(req.body));
 });
 
 // start the Express server
