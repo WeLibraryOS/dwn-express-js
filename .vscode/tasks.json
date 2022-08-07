@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "esbuild",
+            "type": "shell",
+            "command": "node esbuild.mjs",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+              }
+            }
+    ]
+  }
