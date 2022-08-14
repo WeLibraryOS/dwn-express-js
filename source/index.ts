@@ -39,7 +39,18 @@ function FeatureDetectionRead(
   message: BaseMessageSchema,
   messageStore: MessageStore,
   didResolver: DIDResolver): Promise<MessageReply> {
-  return Promise.resolve(new MessageReply({status: {code: 200, message: 'OK'}}));
+    const entries = [
+      {
+        descriptor: {
+          method: 'FeatureDetectionRead',
+          type: "FeatureDetection",
+          interfaces: { 
+            collections: {
+            CollectionsQuery: true
+          } }  
+      }}
+    ];
+  return Promise.resolve(new MessageReply({entries: entries, status: {code: 200, message: 'OK'}}));
 }
 
 const methodHandlers = [] 
@@ -61,8 +72,9 @@ app.get("/ping", (req, res) => {
   res.json({ message: "DID Express JS" });
 });
 
-app.post("/", (req, res) => {
-  res.json(dwn.processRequest(req.body));
+app.post("/", async (req, res) => {
+  const response = await dwn.processRequest(req.body);
+  res.json(response);
 });
 
 // start the Express server
