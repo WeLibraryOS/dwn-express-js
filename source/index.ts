@@ -1,11 +1,11 @@
-import { DWN } from "dwn-sdk";
-import { MessageReply } from "dwn-sdk/dist/esm/core";
-import { BaseMessageSchema } from "dwn-sdk/dist/esm/core/types";
-import { DIDMethodResolver, DIDResolutionResult, DIDResolver } from "dwn-sdk/dist/esm/did/did-resolver";
-import {Config} from "dwn-sdk/dist/esm/dwn";
-import { Interface } from "dwn-sdk/dist/esm/interfaces/types";
-import { MessageStore } from "dwn-sdk/dist/esm/store/message-store";
-import { Context } from "dwn-sdk/dist/esm/types";
+import { DWN } from "./dwn-sdk";
+import { MessageReply } from "./dwn-sdk/core";
+import { BaseMessageSchema } from "./dwn-sdk/core/types";
+import { DIDMethodResolver, DIDResolutionResult, DIDResolver } from "./dwn-sdk/did/did-resolver";
+import {Config} from "./dwn-sdk/dwn";
+import { Interface } from "./dwn-sdk/interfaces/types";
+import { MessageStore } from "./dwn-sdk/store/message-store";
+import { Context } from "./dwn-sdk/types";
 import express, { Application, Request, Response, NextFunction } from "express";
 
 
@@ -39,6 +39,12 @@ function FeatureDetectionRead(
   message: BaseMessageSchema,
   messageStore: MessageStore,
   didResolver: DIDResolver): Promise<MessageReply> {
+
+    const interfaces: string[] = []
+    for(var index in DWN.methodHandlers) {
+      interfaces.push(index.toString());
+    }
+
     const entries = [
       {
         descriptor: {
