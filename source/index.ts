@@ -31,17 +31,14 @@ class VCMethodResolver implements DIDMethodResolver {
   }
 }
 
-const schemas = {} as { [key: string]: any };
-schemas['FeatureDetectionRead'] = true;
-
-function FeatureDetectionRead(
+function FeatureDetectionRead (
   ctx: Context,
   message: BaseMessageSchema,
   messageStore: MessageStore,
   didResolver: DIDResolver): Promise<MessageReply> {
 
     const interfaces: string[] = []
-    for(var index in DWN.methodHandlers) {
+    for(var index in DWN.interfaces) {
       interfaces.push(index.toString());
     }
 
@@ -59,14 +56,12 @@ function FeatureDetectionRead(
   return Promise.resolve(new MessageReply({entries: entries, status: {code: 200, message: 'OK'}}));
 }
 
-const methodHandlers = [] 
-methodHandlers['FeatureDetectionRead'] = FeatureDetectionRead;
-
 const config: Config = {
   DIDMethodResolvers: [new VCMethodResolver()],
   interfaces: [{
-    methodHandlers: methodHandlers,
-    schemas: schemas
+    methodHandlers: {'FeatureDetectionRead': FeatureDetectionRead},
+    schemas: {},  // TODO: add schema here
+    messages: []
   }]
 }
 
