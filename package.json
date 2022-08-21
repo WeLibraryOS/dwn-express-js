@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "classic-level": "^1.2.0",
+    "dwn-sdk": "workspace:*",
     "express": "^4.18.1",
     "leveldown": "^6.1.1"
   },

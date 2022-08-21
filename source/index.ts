@@ -1,5 +1,5 @@
-import { DWN } from "./dwn-sdk";
-import { MessageReply } from "./dwn-sdk/core";
+import { DWN } from "dwn-sdk-js";
+import { MessageReply } from "dwn-sdk-js/core";
 import { BaseMessageSchema } from "./dwn-sdk/core/types";
 import { DIDMethodResolver, DIDResolutionResult, DIDResolver } from "./dwn-sdk/did/did-resolver";
 import {Config} from "./dwn-sdk/dwn";
