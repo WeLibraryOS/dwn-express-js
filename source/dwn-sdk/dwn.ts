@@ -16,6 +16,8 @@ export class DWN {
     PermissionsInterface
   ];
 
+  static methodHandlers: {[method: string]: MethodHandler};
+
   DIDResolver: DIDResolver;
   messageStore: MessageStore;
 
@@ -29,7 +31,21 @@ export class DWN {
     config.DIDMethodResolvers = config.DIDMethodResolvers || [];
     config.interfaces = config.interfaces || [];
 
+
+    DWN.methodHandlers = {}
     DWN.interfaces = DWN.interfaces.concat(config.interfaces || []);
+
+    for (const { methodHandlers, schemas } of DWN.interfaces) {
+
+      // TODO: what about schemas for CollectionsInterface and PermissionsInterface
+      for (const methodName in methodHandlers) {
+        DWN.methodHandlers[methodName] = methodHandlers[methodName];
+      }
+
+      for (const schemaName in schemas) {
+        addSchema(schemaName, schemas[schemaName]);
+      }
+    }
 
 
     const dwn = new DWN(config);
@@ -83,7 +99,6 @@ export class DWN {
       });
     }
 
-    // TODO: re-write here to find method inside of interfaces
     const interfaceMethod = DWN.methodHandlers[message.descriptor.method];
 
     return await interfaceMethod(ctx, message, this.messageStore, this.DIDResolver);

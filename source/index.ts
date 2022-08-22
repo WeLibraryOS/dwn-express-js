@@ -37,20 +37,22 @@ function FeatureDetectionRead (
   messageStore: MessageStore,
   didResolver: DIDResolver): Promise<MessageReply> {
 
-    const interfaces: string[] = []
-    for(var index in DWN.interfaces) {
-      interfaces.push(index.toString());
-    }
+    const interfaces: {[id: string] : any} = {};
+
+    for( const {name, methodHandlers} of DWN.interfaces) {
+      const methodsPresent = {}
+      for (const methodName in methodHandlers) {
+        methodsPresent[methodName] = true;
+      }
+      interfaces[name] = methodsPresent;
+    };
 
     const entries = [
       {
         descriptor: {
           method: 'FeatureDetectionRead',
           type: "FeatureDetection",
-          interfaces: { 
-            collections: {
-            CollectionsQuery: true
-          } }  
+          interfaces: interfaces
       }}
     ];
   return Promise.resolve(new MessageReply({entries: entries, status: {code: 200, message: 'OK'}}));
@@ -59,8 +61,16 @@ function FeatureDetectionRead (
 const config: Config = {
   DIDMethodResolvers: [new VCMethodResolver()],
   interfaces: [{
+    'name': 'feature-detection',
     methodHandlers: {'FeatureDetectionRead': FeatureDetectionRead},
-    schemas: {},  // TODO: add schema here
+    schemas: {'FeatureDetectionRead': {
+        type: 'object',
+        properties: {
+          type: {type: "string"},
+          interfaces: {type: "object"}
+        }
+      },
+    },
     messages: []
   }]
 }
