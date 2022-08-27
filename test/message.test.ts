@@ -3,7 +3,7 @@ import request from "supertest";
 import app from "../source/index";
 
 describe("test message handling", () => {
-  test("feature detection", async () => {
+  it("feature detection", async () => {
     const res = await request(app).post("/").send(
       {
         "target": "did:example:123",
@@ -17,6 +17,6 @@ describe("test message handling", () => {
         ]
       }
     );
-    await expect(res.body).toEqual({ message: "DID Express JS" });
+    await expect(res.body).equal({ message: "DID Express JS" });
   });
 });

@@ -2,9 +2,11 @@ import request from "supertest";
 
 import app from "../source/index";
 
+import { expect } from 'chai';
+
 describe("test app running", () => {
-  test("ping route", async () => {
+  it("ping route", async () => {
     const res = await request(app).get("/ping");
-    await expect(res.body).toEqual({ message: "DID Express JS" });
+    await expect(res.body).equal({ message: "DID Express JS" });
   });
 });

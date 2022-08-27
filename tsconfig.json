@@ -1,0 +1,39 @@
+// we're using babel to transpile ts -> js. We're using `tsc` to generate
+// our type definitions. The reasons why we chose this approach are documented
+// in this repo's Github Wiki.
+{
+  "compilerOptions": {
+    "lib": [
+      "DOM",
+      "ES6"
+    ],
+    "types": ["mocha", "chai", "chai-http"],
+    "target": "es6",
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist/esm",
+    "sourceMap": true,
+    "moduleResolution": "node",
+    // allows us to import json files
+    "resolveJsonModule": true,
+    // required otherwise `ms` lib doesn't import
+    "esModuleInterop": true
+  },
+  "include": [
+    "./source/index.ts",
+    "./test/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "ts-node": {
+    "esm": true,
+    "compilerOptions": {
+      "module": "es2022",
+      "target": "es2017",
+      "moduleResolution": "node",
+      "esModuleInterop": true
+    }
+  }
+}
