@@ -5,7 +5,7 @@ import type { BaseMessageSchema, RequestSchema } from './core/types';
 import type { MessageStore } from './store/message-store';
 
 import { addSchema } from './validation/validator';
-import { CollectionsInterface, PermissionsInterface } from './interfaces';
+import { CollectionsInterface, PermissionsInterface, FeatureDetectionInterface } from './interfaces';
 import { DIDResolver } from './did/did-resolver';
 import { Message, MessageReply, Request, Response } from './core';
 import { MessageStoreLevel } from './store/message-store-level';
@@ -13,7 +13,8 @@ import { MessageStoreLevel } from './store/message-store-level';
 export class DWN {
   static interfaces: Interface[] = [
     CollectionsInterface,
-    PermissionsInterface
+    PermissionsInterface,
+    FeatureDetectionInterface
   ];
 
   static methodHandlers: {[method: string]: MethodHandler};
@@ -23,7 +24,7 @@ export class DWN {
 
   private constructor(config: Config) {
     this.DIDResolver = new DIDResolver(config.DIDMethodResolvers);
-    this.messageStore = config.messageStore;
+    this.messageStore = config.messageStore!;
   }
 
   static async create(config: Config): Promise<DWN> {
