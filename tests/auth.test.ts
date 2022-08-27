@@ -6,7 +6,7 @@ import { DIDResolver } from "../source/dwn-sdk/did/did-resolver";
 // from /dwn-sdk-jstests/jose/jws/general.spec.ts
 describe('General JWS Sign/Verify', () => {
 
-    describe('should sign and verify secp256k1 signature using a key vector correctly',  async () => {
+    test('should sign and verify secp256k1 signature using a key vector correctly',  async () => {
         const { privateJwk, publicJwk } = await secp256k1.generateKeyPair();
         const payloadBytes = new TextEncoder().encode('anyPayloadValue');
         const protectedHeader = { alg: 'ES256K', kid: 'did:jank:alice#key1' };

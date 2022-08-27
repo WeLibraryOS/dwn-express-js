@@ -6,7 +6,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "test": "jest",
-    "test:watch": "jest --watch",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "start": "node esbuild.mjs && node --enable-source-maps ."
   },
   "keywords": [],
