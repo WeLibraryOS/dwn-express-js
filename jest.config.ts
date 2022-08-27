@@ -2,17 +2,7 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  "transform": {
-    "^.+\\.tsx?$": [ 
-      "esbuild-jest", 
-      { 
-        sourcemap: true,
-        loaders: {
-          '.test.ts': 'ts'
-        },
-        format: 'cjs',
-        target: 'node18',
-      } 
-    ]
+  transform: {
+    '^.+\\.[jt]sx?$': ['esbuild-jest', { sourcemap: true }],
   }
 };
