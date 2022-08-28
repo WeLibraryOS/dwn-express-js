@@ -1,19 +1,15 @@
-import { secp256k1 } from "../source/dwn-sdk/jose/algorithms/signing/secp256k1";
 import { GeneralJwsSigner, GeneralJwsVerifier } from "../source/dwn-sdk/jose/jws/general";
 import sinon from 'sinon';
 import { DIDResolver } from "../source/dwn-sdk/did/did-resolver";
+import { makeTestJWS } from "./helpers";
 
 // from /dwn-sdk-jstests/jose/jws/general.spec.ts
 describe('General JWS Sign/Verify', () => {
 
     test('should sign and verify secp256k1 signature using a key vector correctly',  async () => {
-        const { privateJwk, publicJwk } = await secp256k1.generateKeyPair();
-        const payloadBytes = new TextEncoder().encode('anyPayloadValue');
-        const protectedHeader = { alg: 'ES256K', kid: 'did:jank:alice#key1' };
-    
-        const signer = await GeneralJwsSigner.create(payloadBytes, [{ jwkPrivate: privateJwk, protectedHeader }]);
-        const jws = signer.getJws();
-    
+        
+      const {jws, publicJwk} = await makeTestJWS({hello: "darkness my old friend"});
+
         const mockResolutionResult = {
           didResolutionMetadata : {},
           didDocument           : {
