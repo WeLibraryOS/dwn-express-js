@@ -1,8 +1,15 @@
-# Installation instructions
+# Getting Started
 
 ```
 pnpm install
+pnpm test
 ```
+
+## Test Suite
+
+`tests/app.test.ts` basic test of Express server response, using `supertests`
+`tests/auth.test.ts` test signature verification
+`tests/message.test.ts` test signed CollectionsQuery message construction and verification
 
 ## What are we trying to do here?
 
