@@ -7,9 +7,9 @@ pnpm test
 
 ## Test Suite
 
-* `tests/app.test.ts` basic test of Express server response, using `supertest`
-* `tests/auth.test.ts` test signature verification
-* `tests/message.test.ts` test signed CollectionsQuery message construction and verification
+* [tests/app.test.ts](tests/app.test.ts) basic test of Express server response, using `supertest`
+* [tests/auth.test.ts](tests/auth.test.ts) test signature verification
+* [tests/message.test.ts](tests/message.test.ts) test signed CollectionsQuery message construction and verification
 
 ## What are we trying to do here?
 
