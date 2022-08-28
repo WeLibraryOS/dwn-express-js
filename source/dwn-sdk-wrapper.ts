@@ -1,7 +1,6 @@
 import { DWN } from "./dwn-sdk";
 import { DIDMethodResolver, DIDResolutionResult, DIDResolver } from "./dwn-sdk/did/did-resolver";
 import {Config} from "./dwn-sdk/dwn";
-import { MessageStoreMem } from "./dwn-sdk/store/message-store-mem";
 
 class VCMethodResolver implements DIDMethodResolver {
 
