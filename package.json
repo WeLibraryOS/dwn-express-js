@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "test": "jest",
-    "test:watch": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "start": "node esbuild.mjs && node --enable-source-maps ."
   },
   "keywords": [],
@@ -31,6 +30,7 @@
     "leveldown": "^6.1.1",
     "lodash": "4.17.21",
     "lru-cache": "7.12.0",
+    "memstore": "^0.1.1",
     "ms": "2.1.3",
     "multiformats": "9.6.4",
     "search-index": "3.1.2",
