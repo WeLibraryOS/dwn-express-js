@@ -92,7 +92,7 @@ describe("test message handling", () => {
     console.log(JSON.stringify(messageBody))
     const res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
-    await expect(res.replies![0].status.code).toBe(200);
+    await expect(res.replies![0].status.code).toBe(202);
   })
 
 });
