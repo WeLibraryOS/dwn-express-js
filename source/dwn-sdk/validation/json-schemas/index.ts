@@ -6,6 +6,7 @@ import PermissionsDefinitions from './permissions/definitions.json';
 import PermissionsRequest from './permissions/permissions-request.json';
 import PermissionsGrant from './permissions/permissions-grant.json';
 import Request from './request.json';
+import VerifiableCredential from './vc_schema.json';
 
 export const schemas = {
   CollectionsQuery,
@@ -15,5 +16,6 @@ export const schemas = {
   PermissionsDefinitions,
   PermissionsGrant,
   PermissionsRequest,
-  Request
+  Request,
+  VerifiableCredential
 };
