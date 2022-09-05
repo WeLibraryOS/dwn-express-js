@@ -49,7 +49,7 @@ export class PermissionsRequest extends Message implements Authorizable {
   }
 
   get id(): string {
-    return this.message.descriptor.objectId;
+    return this.message.descriptor.objectId!;
   }
 
   get conditions(): PermissionConditions {

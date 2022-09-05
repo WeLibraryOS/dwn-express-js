@@ -4,7 +4,7 @@ import type { PermissionScope, PermissionConditions } from '../types';
 import type { SignatureInput } from '../../../jose/jws/general/types';
 
 import { CID } from 'multiformats/cid';
-import { authenticate, verifyAuth } from '../../../core/auth';
+import { sign, verifyAuth } from '../../../core/auth';
 import { DIDResolver } from '../../../did/did-resolver';
 import { generateCid } from '../../../utils/cid';
 import { Message } from '../../../core/message';
@@ -43,7 +43,7 @@ export class PermissionsGrant extends Message implements Authorizable {
       scope       : options.scope,
     };
 
-    const auth = await authenticate({ descriptor }, options.signatureInput);
+    const auth = await sign({ descriptor }, options.signatureInput);
     const message: PermissionsGrantSchema = { descriptor, authorization: auth };
 
     return new PermissionsGrant(message);

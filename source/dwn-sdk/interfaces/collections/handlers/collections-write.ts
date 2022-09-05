@@ -23,6 +23,9 @@ export const handleCollectionsWrite: MethodHandler = async (
 
   // if there is an owner, check if the owner is the same as the signer
   if (context.owner && !verificationResult.signers.includes(context.owner)) {
+
+    // TODO: after implementing permissions, check if the signer is allowed to write to the collection
+
     return new MessageReply({
       status: { code: 401, message: "unauthorize" }
     });
