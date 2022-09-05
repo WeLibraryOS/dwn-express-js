@@ -11,11 +11,20 @@ export const handleCollectionsWrite: MethodHandler = async (
 ): Promise<MessageReply> => {
   const collectionsWriteMessage = new CollectionsWrite(message as CollectionsWriteSchema);
 
+  let verificationResult;
+
   try {
-    await collectionsWriteMessage.verifyAuth(didResolver);
+    verificationResult = await collectionsWriteMessage.verifyAuth(didResolver);
   } catch (e) {
     return new MessageReply({
       status: { code: 401, message: e.message }
+    });
+  }
+
+  // if there is an owner, check if the owner is the same as the signer
+  if (context.owner && !verificationResult.signers.includes(context.owner)) {
+    return new MessageReply({
+      status: { code: 401, message: "unauthorize" }
     });
   }
 

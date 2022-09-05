@@ -1,4 +1,4 @@
-import { RequestSchema } from './types';
+import { BaseMessageSchema, RequestSchema } from './types';
 import { validate } from '../validation/validator';
 
 export class Request {
@@ -18,5 +18,12 @@ export class Request {
     validate('Request', rawRequest);
 
     return rawRequest as RequestSchema;
+  }
+
+  static createFromMessage(target: string, message: BaseMessageSchema): Request {
+    return {
+      target,
+      messages: [message]
+    }
   }
 }

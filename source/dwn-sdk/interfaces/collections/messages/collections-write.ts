@@ -4,13 +4,14 @@ import { DIDResolver } from '../../../did/did-resolver';
 import { Message } from '../../../core/message';
 import { removeUndefinedProperties } from '../../../utils/object';
 import { sign, verifyAuth } from '../../../core/auth';
+import { getDagCid } from '../../../utils/data';
 
 type CollectionsWriteOptions = AuthCreateOptions & {
   protocol?: string;
   schema?: string;
   recordId: string;
   nonce: string;
-  dataCid: string;
+  data: Uint8Array;
   dateCreated: number;
   published?: boolean;
   datePublished?: number;
@@ -25,13 +26,14 @@ export class CollectionsWrite extends Message implements Authorizable {
   }
 
   static async create(options: CollectionsWriteOptions): Promise<CollectionsWrite> {
+    const dataCid = await getDagCid(options.data);
     const descriptor: CollectionsWriteDescriptor = {
       method        : 'CollectionsWrite',
       protocol      : options.protocol,
       schema        : options.schema,
       recordId      : options.recordId,
       nonce         : options.nonce,
-      dataCid       : options.dataCid,
+      dataCid       : dataCid.toString(),
       dateCreated   : options.dateCreated,
       published     : options.published,
       datePublished : options.datePublished,
@@ -50,6 +52,7 @@ export class CollectionsWrite extends Message implements Authorizable {
 
   async verifyAuth(didResolver: DIDResolver): Promise<AuthVerificationResult> {
     // TODO: Issue #75 - Add permission verification - https://github.com/TBD54566975/dwn-sdk-js/issues/75
-    return await verifyAuth(this.message, didResolver);
+    const verificationResult =  await verifyAuth(this.message, didResolver);
+    return verificationResult
   }
 }

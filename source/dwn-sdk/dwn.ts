@@ -21,10 +21,12 @@ export class DWN {
 
   DIDResolver: DIDResolver;
   messageStore: MessageStore;
+  owner?: string;
 
   private constructor(config: Config) {
     this.DIDResolver = new DIDResolver(config.DIDMethodResolvers);
     this.messageStore = config.messageStore!;
+    this.owner = config.owner;
   }
 
   static async create(config: Config): Promise<DWN> {
@@ -75,7 +77,7 @@ export class DWN {
     }
 
     const response = new Response();
-    const context: Context = { tenant: request.target };
+    const context: Context = { tenant: request.target, owner: this.owner };
 
     for (const message of request.messages) {
       const result = await this.processMessage(message, context);
@@ -110,4 +112,5 @@ export type Config = {
   DIDMethodResolvers: DIDMethodResolver[],
   interfaces?: Interface[];
   messageStore?: MessageStore;
+  owner?: string; // DID of the DWN owner
 };

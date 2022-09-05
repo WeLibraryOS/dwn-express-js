@@ -13,6 +13,9 @@ export interface Context {
   signal?: AbortSignal
   /** the recipient DID of the message being processed */
   tenant: string
+
+  // the owner of the DWN instance
+  owner?: string
 };
 
 /**

@@ -2,7 +2,7 @@ import { CID } from "multiformats/cid";
 import { DIDMethodResolver, DIDResolutionResult } from "../source/dwn-sdk/did/did-resolver";
 import { secp256k1 } from "../source/dwn-sdk/jose/algorithms/signing/secp256k1";
 import { GeneralJwsSigner, GeneralJwsVerifier } from "../source/dwn-sdk/jose/jws/general";
-import { GeneralJws } from "../source/dwn-sdk/jose/jws/general/types";
+import { GeneralJws, SignatureInput } from "../source/dwn-sdk/jose/jws/general/types";
 import { PublicJwk, PrivateJwk } from "../source/dwn-sdk/jose/types";
 import { generateCid } from "../source/dwn-sdk/utils/cid";
 
@@ -98,4 +98,19 @@ export class TestMethodResolver implements DIDMethodResolver {
           "jws": "eyJhbGciOiJFUzI1NksifQ.."
         }
       }
+  }
+
+  export function makeSignatureInput(privateJwk: PrivateJwk, did: string): SignatureInput {
+    const keyId = `${did}#key1`;
+    return {
+      jwkPrivate      : privateJwk,
+      protectedHeader : {
+        alg : privateJwk.alg as string,
+        kid : keyId
+      }
+    };
+  }
+
+  export function dataAsBase64(data: any) {
+    return Buffer.from(JSON.stringify(data)).toString('base64');
   }
