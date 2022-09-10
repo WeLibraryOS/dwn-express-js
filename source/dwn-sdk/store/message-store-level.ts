@@ -13,9 +13,10 @@ import * as cbor from '@ipld/dag-cbor';
 import * as block from 'multiformats/block';
 
 import _ from 'lodash';
-import searchIndex from 'search-index';
 import { exporter } from 'ipfs-unixfs-exporter';
 import { base64url } from 'multiformats/bases/base64';
+
+import { AbstractLevelDOWNConstructor } from 'abstract-leveldown';
 
 /**
  * A simple implementation of {@link MessageStore} that works in both the browser and server-side.
@@ -43,12 +44,12 @@ export class MessageStoreLevel implements MessageStore {
       ...config
     };
 
-    this.db = new BlockstoreLevel(this.config.blockstoreLocation);
+    this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.db_constructor);
   }
 
   async open(): Promise<void> {
     if (!this.db) {
-      this.db = new BlockstoreLevel(this.config.blockstoreLocation);
+      this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.db_constructor);
     }
 
     await this.db.open();
@@ -58,7 +59,7 @@ export class MessageStoreLevel implements MessageStore {
     // calling `searchIndex()` twice without closing its DB causes the process to hang (ie. calling this method consecutively),
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
-      this.index = await searchIndex({ name: this.config.indexLocation });
+      this.index = await searchIndex({ name: this.config.indexLocation, db: this.config.db_constructor || require('leveldown') });
     }
   }
 
@@ -71,7 +72,7 @@ export class MessageStoreLevel implements MessageStore {
     const bytes = await this.db.get(cid, ctx);
 
     if (!bytes) {
-      return;
+      return Promise.reject();
     }
 
     const decodedBlock = await block.decode({ bytes, codec: cbor, hasher: sha256 });
@@ -210,6 +211,7 @@ export class MessageStoreLevel implements MessageStore {
 }
 
 type MessageStoreLevelConfig = {
+  db_constructor?: AbstractLevelDOWNConstructor,
   blockstoreLocation?: string,
   indexLocation?: string,
 };

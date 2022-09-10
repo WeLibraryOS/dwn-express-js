@@ -1,12 +1,13 @@
 import { DWN } from "../source/dwn-sdk";
 import createDWN from "../source/dwn-sdk-wrapper";
 import { CollectionsWrite } from "../source/dwn-sdk/interfaces/collections/messages/collections-write";
-import { MessageStoreMem } from "../source/dwn-sdk/store/message-store-mem";
 import { dataAsBase64, KeyPair, makeDataCID, makeKeyPair, makeSignatureInput, makeTestJWS, makeTestVerifiableCredential, TestMethodResolver } from "./helpers";
 import { v4 as uuidv4 } from 'uuid';
 import { Request } from "../source/dwn-sdk/core/request";
 import { PermissionsRequest } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-request";
 import { PermissionsGrant } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-grant";
+
+import LevelMemory from "level-mem";
 
 describe("test permission handling", () => {
 
@@ -29,7 +30,7 @@ describe("test permission handling", () => {
     testResolver.addKey(bobDid, bobKeys.publicJwk);
     
     dwn = await createDWN({
-      messageStore: new MessageStoreMem(),
+      dbConstructor: LevelMemory,
       DIDMethodResolvers: [testResolver],
       owner: aliceDid
     });

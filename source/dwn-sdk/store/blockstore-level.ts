@@ -5,13 +5,15 @@ import type { AwaitIterable, Pair, Batch, Query, KeyQuery } from 'interface-stor
 import { Level } from 'level';
 import { CID } from 'multiformats';
 
+import { AbstractLevelDOWN, AbstractLevelDOWNConstructor } from 'abstract-leveldown';
+
 
 // `level` works in Node.js 12+ and Electron 5+ on Linux, Mac OS, Windows and
 // FreeBSD, including any future Node.js and Electron release thanks to Node-API, including ARM
 // platforms like Raspberry Pi and Android, as well as in Chrome, Firefox, Edge, Safari, iOS Safari
 //  and Chrome for Android.
 export class BlockstoreLevel implements Blockstore {
-  db: Level<string, Uint8Array>;
+  db: AbstractLevelDOWN<string, Uint8Array>;
 
   /**
    * @param location - must be a directory path (relative or absolute) where LevelDB will store its
@@ -19,8 +21,8 @@ export class BlockstoreLevel implements Blockstore {
    * the {@link https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase IDBDatabase}
    * to be opened.
    */
-  constructor(location: string) {
-    this.db = new Level(location, { keyEncoding: 'utf8', valueEncoding: 'binary' });
+  constructor(location: string, abstract_db?: AbstractLevelDOWNConstructor) {
+    this.db = (abstract_db && new abstract_db(location)) || new Level(location, { keyEncoding: 'utf8', valueEncoding: 'binary' });
   }
 
   async open(): Promise<void> {
