@@ -9,7 +9,7 @@ import { CollectionsInterface, PermissionsInterface, FeatureDetectionInterface }
 import { DIDResolver } from './did/did-resolver';
 import { Message, MessageReply, Request, Response } from './core';
 import { MessageStoreLevel } from './store/message-store-level';
-import { AbstractLevelDOWNConstructor } from 'abstract-leveldown';
+import { AbstractLevel } from 'abstract-level';
 
 export class DWN {
   static interfaces: Interface[] = [
@@ -114,6 +114,6 @@ export type Config = {
   DIDMethodResolvers: DIDMethodResolver[],
   interfaces?: Interface[];
   messageStore?: MessageStore;
-  dbConstructor?: AbstractLevelDOWNConstructor;
+  dbConstructor?: AbstractLevel<any>;
   owner?: string; // DID of the DWN owner
 };

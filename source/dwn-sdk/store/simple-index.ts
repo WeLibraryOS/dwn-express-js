@@ -20,6 +20,9 @@ export default class SimpleIndex {
         let val = object;
         for (const key of keys) {
             val = val[key];
+            if (val === undefined) {
+                return '';
+            }
         }
         return val;
     }

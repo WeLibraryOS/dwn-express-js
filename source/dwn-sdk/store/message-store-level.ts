@@ -18,7 +18,7 @@ import _ from 'lodash';
 import { exporter } from 'ipfs-unixfs-exporter';
 import { base64url } from 'multiformats/bases/base64';
 
-import { AbstractLevelDOWNConstructor } from 'abstract-leveldown';
+import { AbstractLevel } from 'abstract-level';
 
 /**
  * A simple implementation of {@link MessageStore} that works in both the browser and server-side.
@@ -211,7 +211,7 @@ export class MessageStoreLevel implements MessageStore {
 }
 
 type MessageStoreLevelConfig = {
-  db_constructor?: AbstractLevelDOWNConstructor,
+  db_constructor?: AbstractLevel<any>,
   blockstoreLocation?: string,
   indexLocation?: string,
 };

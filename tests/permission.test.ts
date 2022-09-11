@@ -30,7 +30,7 @@ describe("test permission handling", () => {
     testResolver.addKey(bobDid, bobKeys.publicJwk);
     
     dwn = await createDWN({
-      dbConstructor: LevelMemory,
+      dbConstructor: new LevelMemory(),
       DIDMethodResolvers: [testResolver],
       owner: aliceDid
     });
