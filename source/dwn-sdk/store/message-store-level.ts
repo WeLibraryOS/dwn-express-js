@@ -62,8 +62,7 @@ export class MessageStoreLevel implements MessageStore {
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
       this.index = new MiniSearch({
-        fields: ['tenant', 'type', 'sender', 'recipient', 'data'],
-        tokenize: (string, _fieldName) => string.split('-')
+        fields: ['tenant', 'method', 'author', 'id']
       })
     }
   }
@@ -114,10 +113,11 @@ export class MessageStoreLevel implements MessageStore {
     // parse query into a query that is compatible with the index we're using
     const indexQueryTerms: string[] = MessageStoreLevel.buildIndexQueryTerms(query);
 
+    debugger
     const indexResults = this.index.search(indexQueryTerms.join(' '));
 
     for (const result of indexResults) {
-      const cid = CID.parse(result._id);
+      const cid = CID.parse(result.id);
       const message = await this.get(cid, ctx);
 
       messages.push(message);
@@ -168,11 +168,7 @@ export class MessageStoreLevel implements MessageStore {
       tenant : ctx.tenant
     };
 
-    // tokenSplitRegex is used to tokenize values. By default, only letters and digits are indexed,
-    // overriding to include all characters, examples why we need to include more than just letters and digits:
-    // 'did:example:alice'                    - ':'
-    // '337970c4-52e0-4bd7-b606-bfc1d6fe2350' - '-'
-    // 'application/json'                     - '/'
+
     await this.index.addAll([indexDocument]);
   }
 

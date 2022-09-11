@@ -53,7 +53,6 @@ describe("test permission handling", () => {
     const collectionsWrite = await CollectionsWrite.create(options);
 
     // bob tries to write to alice's collection
-    // TODO: bobDid is not the right target here, what is?
     let res = await dwn.processRequest(Request.createFromMessage(bobDid, collectionsWrite.toObject()));
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(401);
@@ -69,7 +68,6 @@ describe("test permission handling", () => {
       signatureInput: aliceSignatureInput
     });
 
-    // TODO: what is the right target here?
     res = await dwn.processRequest(Request.createFromMessage(bobDid, permissionsGrant.toObject()));
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(202);

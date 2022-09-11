@@ -78,6 +78,7 @@ export class DWN {
     }
 
     const response = new Response();
+
     const context: Context = { tenant: request.target, owner: this.owner };
 
     for (const message of request.messages) {

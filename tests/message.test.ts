@@ -23,7 +23,7 @@ describe("test message handling", () => {
 
   test("feature detection", async () => {
     const messageBody  = {
-      "target": "did:example:123",
+      "target": testDid,
       "messages": [
         {
             "descriptor": {
@@ -49,7 +49,7 @@ describe("test message handling", () => {
     const jws = await makeTestJWS(descriptor, keyPair, testDid);
     
     const messageBody  = {
-      "target": "did:example:123",
+      "target": testDid,
       "messages": [
         {
           "descriptor": descriptor,
@@ -80,7 +80,7 @@ describe("test message handling", () => {
     const jws = await makeTestJWS(descriptor, keyPair, testDid);
     
     const messageBody  = {
-      "target": "did:example:123",
+      "target": testDid,
       "messages": [
         {
           "data": Buffer.from(dataCid.data).toString('base64'),

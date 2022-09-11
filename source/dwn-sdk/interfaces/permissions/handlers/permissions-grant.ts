@@ -27,6 +27,10 @@ export const handlePermissionsGrant: MethodHandler = async (
   }
 
   try {
+
+    ctx.author = signer;
+    ctx.tenant = request.grantedTo;
+
     await messageStore.put(message, ctx);
 
     return new MessageReply({
