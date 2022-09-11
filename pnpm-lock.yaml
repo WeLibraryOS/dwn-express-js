@@ -10,7 +10,6 @@ specifiers:
   '@types/jest': ^28.1.6
   '@types/ms': 0.7.31
   '@types/node': ^18.7.8
-  '@types/search-index': 3.0.0
   '@types/supertest': ^2.0.12
   abstract-leveldown: ^7.2.0
   ajv: 8.11.0
@@ -47,7 +46,6 @@ dependencies:
   '@swc/helpers': 0.3.8
   '@types/abstract-leveldown': 7.2.0
   '@types/ms': 0.7.31
-  '@types/search-index': 3.0.0
   abstract-leveldown: 7.2.0
   ajv: 8.11.0
   cross-fetch: 3.1.5
@@ -1014,12 +1012,6 @@ packages:
   /@types/range-parser/1.2.4:
     resolution: {integrity: sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==}
     dev: true
-
-  /@types/search-index/3.0.0:
-    resolution: {integrity: sha512-+UmcCHc0cg3wsfxxJdBec33ncVO1dC/tju0qBuo1xoaeNx+kvjDOgU90w1+069Qh3NGDPtzun1z5GBvj7qF91w==}
-    dependencies:
-      '@types/abstract-leveldown': 7.2.0
-    dev: false
 
   /@types/serve-static/1.15.0:
     resolution: {integrity: sha512-z5xyF6uh8CbjAu9760KDKsH2FcDxZ2tFCsA4HIMWE6IkiYMXfVoa+4f9KX+FN0ZLsaMw1WNG2ETLA6N+/YA+cg==}

@@ -12,7 +12,7 @@ import { toBytes } from '../utils/data';
 import * as cbor from '@ipld/dag-cbor';
 import * as block from 'multiformats/block';
 
-import MiniSearch from 'minisearch';
+import SimpleIndex from './simple-index';
 
 import _ from 'lodash';
 import { exporter } from 'ipfs-unixfs-exporter';
@@ -30,7 +30,7 @@ export class MessageStoreLevel implements MessageStore {
   // levelDB doesn't natively provide the querying capabilities needed for DWN. To accommodate, we're leveraging
   // a level-backed inverted index
   // TODO: search-index lib does not import type `SearchIndex`. find a workaround, Issue #48, https://github.com/TBD54566975/dwn-sdk-js/issues/48
-  index : MiniSearch;
+  index : SimpleIndex;
 
   /**
    * @param {MessageStoreLevelConfig} config
@@ -61,9 +61,9 @@ export class MessageStoreLevel implements MessageStore {
     // calling `searchIndex()` twice without closing its DB causes the process to hang (ie. calling this method consecutively),
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
-      this.index = new MiniSearch({
-        fields: ['tenant', 'method', 'author', 'id']
-      })
+      this.index = new SimpleIndex(
+        ['tenant', 'scope.method', 'author']
+      )
     }
   }
 
@@ -113,11 +113,10 @@ export class MessageStoreLevel implements MessageStore {
     // parse query into a query that is compatible with the index we're using
     const indexQueryTerms: string[] = MessageStoreLevel.buildIndexQueryTerms(query);
 
-    debugger
-    const indexResults = this.index.search(indexQueryTerms.join(' '));
+    const indexResults = this.index.query(indexQueryTerms);
 
     for (const result of indexResults) {
-      const cid = CID.parse(result.id);
+      const cid = CID.parse(result);
       const message = await this.get(cid, ctx);
 
       messages.push(message);
@@ -129,7 +128,7 @@ export class MessageStoreLevel implements MessageStore {
 
   async delete(cid: CID, ctx: Context): Promise<void> {
     await this.db.delete(cid, ctx);
-    await this.index.remove(cid.toString());
+    await this.index.delete(cid.toString());
 
     return;
   }
@@ -169,7 +168,7 @@ export class MessageStoreLevel implements MessageStore {
     };
 
 
-    await this.index.addAll([indexDocument]);
+    await this.index.put(indexDocument);
   }
 
   /**
@@ -177,7 +176,7 @@ export class MessageStoreLevel implements MessageStore {
    */
   async clear(): Promise<void> {
     await this.db.clear();
-    await this.index.removeAll();
+    await this.index.clear();
   }
 
   /**
@@ -203,7 +202,7 @@ export class MessageStoreLevel implements MessageStore {
       if (_.isPlainObject(val)) {
         MessageStoreLevel.buildIndexQueryTerms(val, terms, `${prefix}${property}.`);
       } else {
-        terms.push(`${prefix}${property}:${val}`);
+        terms.push(`${prefix}${property}|${val}`);
       }
     }
 

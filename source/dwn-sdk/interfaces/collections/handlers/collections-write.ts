@@ -25,11 +25,13 @@ export const handleCollectionsWrite: MethodHandler = async (
   // if there is an owner, check if the owner is the same as the signer
   if (context.owner && !verificationResult.signers.includes(context.owner)) {
 
-    const permission_grants = await messageStore.query({scope: {method: 'PermissionGrant'}, author: context.owner, tenant: verificationResult.signers[0]}, context);
+    const permission_grants = await messageStore.query({scope: {method: 'CollectionsWrite'}, author: context.owner, tenant: verificationResult.signers[0]}, context);
 
-    return new MessageReply({
-      status: { code: 401, message: "unauthorize" }
-    });
+    if (permission_grants.length === 0) {
+      return new MessageReply({
+        status: { code: 401, message: 'Unauthorized' }
+      });
+    }
   }
 
   try {
