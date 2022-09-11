@@ -1,4 +1,6 @@
 
+import _ from 'lodash';
+
 export default class SimpleIndex {
 
     keys: string[]
@@ -15,28 +17,17 @@ export default class SimpleIndex {
     close(): void {
 
     }
-    getDotKeyVal(key: string, object: any): string {
-        const keys = key.split('.');
-        let val = object;
-        for (const key of keys) {
-            val = val[key];
-            if (val === undefined) {
-                return '';
-            }
-        }
-        return val;
-    }
 
     makeKeyVal(key: string, object: any): string {
-        return `${key}|${this.getDotKeyVal(key, object)}`;
+        return `${key}|${_.get(object, key.split('.'))}`;
     }
     put(object: any): void {
         const keyVals = this.keys.map(key => this.makeKeyVal(key, object));
-        this.documents.set(keyVals.join('.'), object.id);
+        this.documents.set(keyVals.join('-'), object.id);
     }
 
     query(query: string[]): string[] {
-        const keyVals = query.sort().join('.')
+        const keyVals = query.sort().join('-')
         const id = this.documents.get(keyVals);
         return id ? [id] : [];
     }

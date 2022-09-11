@@ -62,7 +62,7 @@ export class MessageStoreLevel implements MessageStore {
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
       this.index = new SimpleIndex(
-        ['tenant', 'scope.method', 'author']
+        ['tenant', 'method', 'author']
       )
     }
   }

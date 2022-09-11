@@ -25,7 +25,8 @@ export const handleCollectionsWrite: MethodHandler = async (
   // if there is an owner, check if the owner is the same as the signer
   if (context.owner && !verificationResult.signers.includes(context.owner)) {
 
-    const permission_grants = await messageStore.query({scope: {method: 'CollectionsWrite'}, author: context.owner, tenant: verificationResult.signers[0]}, context);
+    // TODO: check this PermissionsGrant to see if in applies to CollectionsWrite and also to this schema
+    const permission_grants = await messageStore.query({method: 'PermissionsGrant', author: context.owner, tenant: verificationResult.signers[0]}, context);
 
     if (permission_grants.length === 0) {
       return new MessageReply({
