@@ -5,13 +5,15 @@ import type { AwaitIterable, Pair, Batch, Query, KeyQuery } from 'interface-stor
 import { Level } from 'level';
 import { CID } from 'multiformats';
 
+import { AbstractLevel } from 'abstract-level';
+
 
 // `level` works in Node.js 12+ and Electron 5+ on Linux, Mac OS, Windows and
 // FreeBSD, including any future Node.js and Electron release thanks to Node-API, including ARM
 // platforms like Raspberry Pi and Android, as well as in Chrome, Firefox, Edge, Safari, iOS Safari
 //  and Chrome for Android.
 export class BlockstoreLevel implements Blockstore {
-  db: Level<string, Uint8Array>;
+  db: AbstractLevel<any>;
 
   /**
    * @param location - must be a directory path (relative or absolute) where LevelDB will store its
@@ -19,8 +21,8 @@ export class BlockstoreLevel implements Blockstore {
    * the {@link https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase IDBDatabase}
    * to be opened.
    */
-  constructor(location: string) {
-    this.db = new Level(location, { keyEncoding: 'utf8', valueEncoding: 'binary' });
+  constructor(location: string, abstract_db?: AbstractLevel<any>) {
+    this.db = abstract_db  || new Level(location, { keyEncoding: 'utf8', valueEncoding: 'binary' });
   }
 
   async open(): Promise<void> {
@@ -62,7 +64,8 @@ export class BlockstoreLevel implements Blockstore {
   async get(key: CID, _ctx?: Context): Promise<Uint8Array | undefined> {
     try {
       const val = await this.db.get(key.toString());
-      return val;
+      // TODO: set up database internal storage correctly so we don't have to do this
+      return new Uint8Array(val.split(',').map((c) => parseInt(c, 10)));
     } catch (e) {
       // level throws an error if the key is not present. Return undefined in this case
       if (e.code === 'LEVEL_NOT_FOUND') {

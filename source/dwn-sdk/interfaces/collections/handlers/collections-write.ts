@@ -21,18 +21,22 @@ export const handleCollectionsWrite: MethodHandler = async (
     });
   }
 
+
   // if there is an owner, check if the owner is the same as the signer
   if (context.owner && !verificationResult.signers.includes(context.owner)) {
 
-    // TODO: after implementing permissions, check if the signer is allowed to write to the collection
+    // TODO: check this PermissionsGrant to see if in applies to CollectionsWrite and also to this schema
+    const permission_grants = await messageStore.query({method: 'PermissionsGrant', author: context.owner, tenant: verificationResult.signers[0]}, context);
 
-    return new MessageReply({
-      status: { code: 401, message: "unauthorize" }
-    });
+    if (permission_grants.length === 0) {
+      return new MessageReply({
+        status: { code: 401, message: 'Unauthorized' }
+      });
+    }
   }
 
   try {
-    await messageStore.put(message, context);
+    await messageStore.put(message, {author: context.tenant, tenant: context.tenant});
 
     return new MessageReply({
       status: { code: 202, message: 'Accepted' }

@@ -9,6 +9,7 @@ import { CollectionsInterface, PermissionsInterface, FeatureDetectionInterface }
 import { DIDResolver } from './did/did-resolver';
 import { Message, MessageReply, Request, Response } from './core';
 import { MessageStoreLevel } from './store/message-store-level';
+import { AbstractLevel } from 'abstract-level';
 
 export class DWN {
   static interfaces: Interface[] = [
@@ -30,7 +31,7 @@ export class DWN {
   }
 
   static async create(config: Config): Promise<DWN> {
-    config.messageStore = config.messageStore || new MessageStoreLevel();
+    config.messageStore = config.messageStore || new MessageStoreLevel({db_constructor: config.dbConstructor});
     config.DIDMethodResolvers = config.DIDMethodResolvers || [];
     config.interfaces = config.interfaces || [];
 
@@ -77,6 +78,7 @@ export class DWN {
     }
 
     const response = new Response();
+
     const context: Context = { tenant: request.target, owner: this.owner };
 
     for (const message of request.messages) {
@@ -112,5 +114,6 @@ export type Config = {
   DIDMethodResolvers: DIDMethodResolver[],
   interfaces?: Interface[];
   messageStore?: MessageStore;
+  dbConstructor?: AbstractLevel<any>;
   owner?: string; // DID of the DWN owner
 };

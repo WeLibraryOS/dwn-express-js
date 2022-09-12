@@ -12,10 +12,13 @@ import { toBytes } from '../utils/data';
 import * as cbor from '@ipld/dag-cbor';
 import * as block from 'multiformats/block';
 
+import SimpleIndex from './simple-index';
+
 import _ from 'lodash';
-import searchIndex from 'search-index';
 import { exporter } from 'ipfs-unixfs-exporter';
 import { base64url } from 'multiformats/bases/base64';
+
+import { AbstractLevel } from 'abstract-level';
 
 /**
  * A simple implementation of {@link MessageStore} that works in both the browser and server-side.
@@ -27,7 +30,7 @@ export class MessageStoreLevel implements MessageStore {
   // levelDB doesn't natively provide the querying capabilities needed for DWN. To accommodate, we're leveraging
   // a level-backed inverted index
   // TODO: search-index lib does not import type `SearchIndex`. find a workaround, Issue #48, https://github.com/TBD54566975/dwn-sdk-js/issues/48
-  index;
+  index : SimpleIndex;
 
   /**
    * @param {MessageStoreLevelConfig} config
@@ -43,12 +46,12 @@ export class MessageStoreLevel implements MessageStore {
       ...config
     };
 
-    this.db = new BlockstoreLevel(this.config.blockstoreLocation);
+    this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.db_constructor);
   }
 
   async open(): Promise<void> {
     if (!this.db) {
-      this.db = new BlockstoreLevel(this.config.blockstoreLocation);
+      this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.db_constructor);
     }
 
     await this.db.open();
@@ -58,20 +61,21 @@ export class MessageStoreLevel implements MessageStore {
     // calling `searchIndex()` twice without closing its DB causes the process to hang (ie. calling this method consecutively),
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
-      this.index = await searchIndex({ name: this.config.indexLocation });
+      this.index = new SimpleIndex(
+        ['tenant', 'method', 'author']
+      )
     }
   }
 
   async close(): Promise<void> {
     await this.db.close();
-    await this.index.INDEX.STORE.close(); // MUST close index-search DB, else `searchIndex()` triggered in a different instance will hang indefinitely
   }
 
   async get(cid: CID, ctx: Context): Promise<BaseMessageSchema> {
     const bytes = await this.db.get(cid, ctx);
 
     if (!bytes) {
-      return;
+      return Promise.reject();
     }
 
     const decodedBlock = await block.decode({ bytes, codec: cbor, hasher: sha256 });
@@ -108,10 +112,11 @@ export class MessageStoreLevel implements MessageStore {
 
     // parse query into a query that is compatible with the index we're using
     const indexQueryTerms: string[] = MessageStoreLevel.buildIndexQueryTerms(query);
-    const { RESULT: indexResults } = await this.index.QUERY({ AND: indexQueryTerms });
+
+    const indexResults = this.index.query(indexQueryTerms);
 
     for (const result of indexResults) {
-      const cid = CID.parse(result._id);
+      const cid = CID.parse(result);
       const message = await this.get(cid, ctx);
 
       messages.push(message);
@@ -123,7 +128,7 @@ export class MessageStoreLevel implements MessageStore {
 
   async delete(cid: CID, ctx: Context): Promise<void> {
     await this.db.delete(cid, ctx);
-    await this.index.DELETE(cid.toString());
+    await this.index.delete(cid.toString());
 
     return;
   }
@@ -157,17 +162,13 @@ export class MessageStoreLevel implements MessageStore {
 
     const indexDocument = {
       ...messageJson.descriptor,
-      _id    : encodedBlock.cid.toString(),
+      id    : encodedBlock.cid.toString(),
       author : ctx.author,
       tenant : ctx.tenant
     };
 
-    // tokenSplitRegex is used to tokenize values. By default, only letters and digits are indexed,
-    // overriding to include all characters, examples why we need to include more than just letters and digits:
-    // 'did:example:alice'                    - ':'
-    // '337970c4-52e0-4bd7-b606-bfc1d6fe2350' - '-'
-    // 'application/json'                     - '/'
-    await this.index.PUT([indexDocument], { tokenSplitRegex: /.+/ });
+
+    await this.index.put(indexDocument);
   }
 
   /**
@@ -175,7 +176,7 @@ export class MessageStoreLevel implements MessageStore {
    */
   async clear(): Promise<void> {
     await this.db.clear();
-    await this.index.FLUSH();
+    await this.index.clear();
   }
 
   /**
@@ -201,7 +202,7 @@ export class MessageStoreLevel implements MessageStore {
       if (_.isPlainObject(val)) {
         MessageStoreLevel.buildIndexQueryTerms(val, terms, `${prefix}${property}.`);
       } else {
-        terms.push(`${prefix}${property}:${val}`);
+        terms.push(`${prefix}${property}|${val}`);
       }
     }
 
@@ -210,6 +211,7 @@ export class MessageStoreLevel implements MessageStore {
 }
 
 type MessageStoreLevelConfig = {
+  db_constructor?: AbstractLevel<any>,
   blockstoreLocation?: string,
   indexLocation?: string,
 };
