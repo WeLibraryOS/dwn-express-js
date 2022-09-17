@@ -3,6 +3,8 @@ import type { CollectionsWriteSchema } from '../types';
 import { CollectionsWrite } from '../messages/collections-write';
 import { MessageReply } from '../../../core';
 
+import { handlePermissionsQuery } from '../../permissions/handlers/permissions-query';
+
 export const handleCollectionsWrite: MethodHandler = async (
   context,
   message,
@@ -25,10 +27,21 @@ export const handleCollectionsWrite: MethodHandler = async (
   // if there is an owner, check if the owner is the same as the signer
   if (context.owner && !verificationResult.signers.includes(context.owner)) {
 
-    // TODO: check this PermissionsGrant to see if in applies to CollectionsWrite and also to this schema
-    const permission_grants = await messageStore.query({method: 'PermissionsGrant', author: context.owner, tenant: verificationResult.signers[0]}, context);
+    const permissions_query_message = {
+      descriptor: {
+        method: 'PermissionsQuery',
+        grantedTo: verificationResult.signers[0],
+        grantedBy: context.owner,
+        scope: {
+          method: 'CollectionsWrite'
+        }
+      }
+    }
 
-    if (permission_grants.length === 0) {
+    // TODO: use PermissionsQuery here to check if the signer is allowed to write to the collection
+    const permission_grants = await handlePermissionsQuery(context, permissions_query_message, messageStore, didResolver);
+
+    if (permission_grants.entries!.length === 0) {
       return new MessageReply({
         status: { code: 401, message: 'Unauthorized' }
       });

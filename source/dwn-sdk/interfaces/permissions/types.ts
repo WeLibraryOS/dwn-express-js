@@ -61,3 +61,18 @@ export type PermissionsGrantSchema = BaseMessageSchema & Authorization & {
   descriptor: PermissionsGrantDescriptor;
   delegationChain?: PermissionsGrantSchema;
 };
+
+export type PermissionsQueryDescriptor = {
+  method: 'PermissionsQuery',
+  permissionRequestId?: string,
+  permissionGrantId?: string,
+  permissionRevokeId?: string,
+  grantedTo?: string,
+  grantedBy?: string,
+  delegatedFrom?: string,
+  scope?: PermissionScope
+};
+
+export type PermissionsQuerySchema = BaseMessageSchema & Authorization & {
+  descriptor: PermissionsQueryDescriptor;
+};
