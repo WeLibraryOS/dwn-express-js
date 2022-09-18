@@ -1,6 +1,11 @@
 
 import _ from 'lodash';
 
+export enum QueryOperation {
+    AND,
+    OR
+}
+
 export default class SimpleIndex {
 
     partial_messages: object[];
@@ -61,16 +66,27 @@ export default class SimpleIndex {
         }
     }
 
-    query(query: string[]): string[] {
+    applyOperation(operation: QueryOperation, number_of_matches: number, number_of_terms: number): Boolean {
+        if (operation === QueryOperation.AND) {
+            return number_of_matches === number_of_terms;
+        } else if (operation === QueryOperation.OR) {
+            return number_of_matches > 0;
+        } else {
+            throw new Error('Invalid operation');
+        }
+    }
+
+
+    query(query: object, operation: QueryOperation = QueryOperation.AND): string[] {
         const flattened = this.flatten(query);
-        const ret: string[] = []
+        const document_matches: Map<string, number> = new Map();
         for (const [query_key, query_value] of flattened) {
             if (this.documents.get(query_key)) {
                 const existingIds = this.documents.get(query_key);
                 if (existingIds) {
                     for (const [id, values] of existingIds) {
                         if (values.includes(query_value)) {
-                            ret.push(id);
+                            document_matches.set(id, (document_matches.get(id) || 0) + 1);
                         }
                     }
                 }
@@ -78,7 +94,7 @@ export default class SimpleIndex {
         }
 
         // TODO: depupe ret
-        return ret;
+        return Array.from(document_matches.keys()).filter(id => this.applyOperation(operation, document_matches.get(id)!, flattened.size));
     }
 
     delete(id: string): any {
