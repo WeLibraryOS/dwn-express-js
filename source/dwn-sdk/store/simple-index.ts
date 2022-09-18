@@ -38,11 +38,12 @@ export default class SimpleIndex {
         ret = new Map<string, string>();
 
         for(var attr in obj){
+            const key = propName + attr;
             if (typeof obj[attr] === 'object'){
-                _.extend(ret, this.flatten(obj[attr], propName + attr));
+                ret = new Map([...ret, ...this.flatten(obj[attr], key)]);
             }
             else{
-                ret[propName + attr] = obj[attr];
+                ret[key] = obj[attr];
             }
         }
         return ret;

@@ -62,7 +62,16 @@ export class MessageStoreLevel implements MessageStore {
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
       this.index = new SimpleIndex(
-        ['tenant', 'method', 'author']
+        [{
+          descriptor: {
+            method: 'PermissionsQuery',
+            grantedTo: 'string',
+            grantedBy: 'string',
+            scope: {
+              method: 'CollectionsWrite'
+            }
+          }
+        }]
       )
     }
   }
@@ -105,15 +114,13 @@ export class MessageStoreLevel implements MessageStore {
   }
 
   async query(query: any, ctx: Context): Promise<BaseMessageSchema[]> {
-    // MUST scope the query to the tenant
-    query.tenant = ctx.tenant;
 
     const messages: BaseMessageSchema[] = [];
 
     // parse query into a query that is compatible with the index we're using
-    const indexQueryTerms: string[] = MessageStoreLevel.buildIndexQueryTerms(query);
+    // const indexQueryTerms: string[] = MessageStoreLevel.buildIndexQueryTerms(query);
 
-    const indexResults = this.index.query(indexQueryTerms);
+    const indexResults = this.index.query(query);
 
     for (const result of indexResults) {
       const cid = CID.parse(result);

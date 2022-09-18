@@ -12,12 +12,8 @@ export const handlePermissionsQuery: MethodHandler = async (
 ): Promise<MessageReply> => {
   const request = new PermissionsQuery(message as PermissionsQuerySchema);
 
-  // TODO: turn request into query_terms
-
-  const query_terms = {}
-
   try {
-    const query_results = await messageStore.query(query_terms, ctx);
+    const query_results = await messageStore.query(message, ctx);
 
     return new MessageReply({
       entries: query_results,
