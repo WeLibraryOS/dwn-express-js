@@ -1,4 +1,4 @@
-import type { Blockstore } from 'interface-blockstore';
+import type { Blockstore, Options } from 'interface-blockstore';
 import type { Context } from '../types';
 import type { AwaitIterable, Pair, Batch, Query, KeyQuery } from 'interface-store';
 
@@ -13,7 +13,7 @@ import { AbstractLevel } from 'abstract-level';
 // platforms like Raspberry Pi and Android, as well as in Chrome, Firefox, Edge, Safari, iOS Safari
 //  and Chrome for Android.
 export class BlockstoreLevel implements Blockstore {
-  db: AbstractLevel<any>;
+  db: AbstractLevel<any, string, Uint8Array>;
 
   /**
    * @param location - must be a directory path (relative or absolute) where LevelDB will store its
@@ -21,7 +21,7 @@ export class BlockstoreLevel implements Blockstore {
    * the {@link https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase IDBDatabase}
    * to be opened.
    */
-  constructor(location: string, abstract_db?: AbstractLevel<any>) {
+  constructor(location: string, abstract_db?: AbstractLevel<any, string, Uint8Array>) {
     this.db = abstract_db  || new Level(location, { keyEncoding: 'utf8', valueEncoding: 'binary' });
   }
 
@@ -57,34 +57,34 @@ export class BlockstoreLevel implements Blockstore {
     return this.db.close();
   }
 
-  put(key: CID, val: Uint8Array, _ctx?: Context): Promise<void> {
+  put(key: CID, val: Uint8Array, _ctx?: Options): Promise<void> {
     return this.db.put(key.toString(), val);
   }
 
-  async get(key: CID, _ctx?: Context): Promise<Uint8Array | undefined> {
+  async get(key: CID, _ctx?: Options): Promise<Uint8Array> {
     try {
       const val = await this.db.get(key.toString());
       // TODO: set up database internal storage correctly so we don't have to do this
       return new Uint8Array(val.split(',').map((c) => parseInt(c, 10)));
     } catch (e) {
-      // level throws an error if the key is not present. Return undefined in this case
+      // level throws an error if the key is not present. Return empty array instead.
       if (e.code === 'LEVEL_NOT_FOUND') {
-        return undefined;
+        return Promise.resolve(new Uint8Array());
       } else {
         throw e;
       }
     }
   }
 
-  async has(key: CID, _ctx?: Context): Promise<boolean> {
+  async has(key: CID, _ctx?: Options): Promise<boolean> {
     return !! await this.get(key);
   }
 
-  delete(key: CID, _ctx?: Context): Promise<void> {
+  delete(key: CID, _ctx?: Options): Promise<void> {
     return this.db.del(key.toString());
   }
 
-  async * putMany(source: AwaitIterable<Pair<CID, Uint8Array>>, _ctx?: Context):
+  async * putMany(source: AwaitIterable<Pair<CID, Uint8Array>>, _ctx?: Options):
     AsyncIterable<Pair<CID, Uint8Array>> {
 
     for await (const entry of source) {
@@ -94,13 +94,13 @@ export class BlockstoreLevel implements Blockstore {
     }
   }
 
-  async * getMany(source: AwaitIterable<CID>, _ctx?: Context): AsyncIterable<Uint8Array> {
+  async * getMany(source: AwaitIterable<CID>, _ctx?: Options): AsyncIterable<Uint8Array> {
     for await (const key of source) {
       yield this.get(key);
     }
   }
 
-  async * deleteMany(source: AwaitIterable<CID>, _ctx?: Context): AsyncIterable<CID> {
+  async * deleteMany(source: AwaitIterable<CID>, _ctx?: Options): AsyncIterable<CID> {
     for await (const key of source) {
       await this.delete(key, _ctx);
 
@@ -119,11 +119,11 @@ export class BlockstoreLevel implements Blockstore {
     throw new Error('not implemented');
   }
 
-  query(_query: Query<CID, Uint8Array>, _ctx?: Context): AsyncIterable<Pair<CID, Uint8Array>> {
+  query(_query: Query<CID, Uint8Array>, _ctx?: Options): AsyncIterable<Pair<CID, Uint8Array>> {
     throw new Error('not implemented');
   }
 
-  queryKeys(_query: KeyQuery<CID>, _ctx?: Context): AsyncIterable<CID> {
+  queryKeys(_query: KeyQuery<CID>, _ctx?: Options): AsyncIterable<CID> {
     throw new Error('not implemented');
   }
 }

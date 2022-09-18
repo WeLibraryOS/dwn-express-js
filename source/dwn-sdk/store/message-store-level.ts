@@ -97,7 +97,7 @@ export class MessageStoreLevel implements MessageStore {
 
     // `data`, if present, is chunked into dag-pb unixfs blocks. re-inflate the chunks.
     const { descriptor } = messageJson;
-    const dataCid = parseCid(descriptor.dataCid);
+    const dataCid = parseCid(descriptor.dataCid!);
 
     const dataDagRoot = await exporter(dataCid, this.db);
     const dataBytes = new Uint8Array(dataDagRoot.size);
@@ -210,7 +210,7 @@ export class MessageStoreLevel implements MessageStore {
 }
 
 type MessageStoreLevelConfig = {
-  db_constructor?: AbstractLevel<any>,
+  db_constructor?: AbstractLevel<any, string, Uint8Array>,
   blockstoreLocation?: string,
   indexLocation?: string,
 };
