@@ -5,7 +5,7 @@ import { importer } from 'ipfs-unixfs-importer';
 type Data = string | number | boolean | Uint8Array | object;
 
 export function toBytes(data: Data): Uint8Array {
-  const { encode } = new TextEncoder();
+  const text_encoder = new TextEncoder();
 
   if (data instanceof Uint8Array) {
     return data;
@@ -13,9 +13,9 @@ export function toBytes(data: Data): Uint8Array {
     return new Uint8Array(data);
   } else if (typeof data === 'object') {
     const stringifiedData = JSON.stringify(data);
-    return encode(stringifiedData);
+    return text_encoder.encode(stringifiedData);
   } else {
-    return encode(data.toString());
+    return text_encoder.encode(data.toString());
   }
 }
 
