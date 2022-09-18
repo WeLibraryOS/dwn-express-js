@@ -160,15 +160,7 @@ export class MessageStoreLevel implements MessageStore {
       for await (const _ of chunk);
     }
 
-    const indexDocument = {
-      ...messageJson.descriptor,
-      id    : encodedBlock.cid.toString(),
-      author : ctx.author,
-      tenant : ctx.tenant
-    };
-
-
-    await this.index.put(indexDocument);
+    await this.index.put(encodedBlock.cid.toString(), messageJson);
   }
 
   /**
