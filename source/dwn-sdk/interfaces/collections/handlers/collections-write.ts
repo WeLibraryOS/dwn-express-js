@@ -29,7 +29,7 @@ export const handleCollectionsWrite: MethodHandler = async (
 
     const permissions_query_message = {
       descriptor: {
-        method: 'PermissionsQuery',
+        // method: 'PermissionsQuery',
         grantedTo: verificationResult.signers[0],
         grantedBy: context.owner,
         scope: {
@@ -38,7 +38,8 @@ export const handleCollectionsWrite: MethodHandler = async (
       }
     }
 
-    // TODO: use PermissionsQuery here to check if the signer is allowed to write to the collection
+    // the specs for PermissionQuery https://identity.foundation/decentralized-web-node/spec/#query-2 include method: 'PermissionsQuery' but you look up
+    // other types of Permissions objects using the other properties of the descriptor. If you don't remove the method property, you get no results
     const permission_grants = await handlePermissionsQuery(context, permissions_query_message, messageStore, didResolver);
 
     if (permission_grants.entries!.length === 0) {

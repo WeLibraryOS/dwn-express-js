@@ -142,7 +142,7 @@ export class MessageStoreLevel implements MessageStore {
 
   async put(messageJson: BaseMessageSchema, ctx: Context): Promise<void> {
 
-    let data = undefined;
+    let data: string | undefined = undefined;
     if (messageJson['data'] !== undefined) {
       const messageJsonWithData = messageJson as GenericMessageSchema;
       data = messageJsonWithData.data;

@@ -1,7 +1,7 @@
 import { DWN } from "../source/dwn-sdk";
 import createDWN from "../source/dwn-sdk-wrapper";
-import { MessageStoreMem } from "../source/dwn-sdk/store/message-store-mem";
 import { KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, TestMethodResolver } from "./helpers";
+import LevelMemory from "level-mem";
 
 describe("test message handling", () => {
 
@@ -16,8 +16,9 @@ describe("test message handling", () => {
     keyPair = await makeKeyPair();
     testResolver.addKey(testDid, keyPair.publicJwk);
     dwn = await createDWN({
-      messageStore: new MessageStoreMem(),
+      dbConstructor: new LevelMemory(),
       DIDMethodResolvers: [testResolver],
+      owner: testDid
     });
   });
 
@@ -89,7 +90,6 @@ describe("test message handling", () => {
         }
       ]
     }
-    console.log(JSON.stringify(messageBody))
     const res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(202);
