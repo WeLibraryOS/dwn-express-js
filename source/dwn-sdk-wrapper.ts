@@ -22,7 +22,7 @@ class VCMethodResolver implements DIDMethodResolver {
   
   const config: Config = {
     DIDMethodResolvers: [new VCMethodResolver()],
-    interfaces: []
+    interfaces: [],
   }
 
   export default async function createDWN(options = {}): Promise<DWN> {

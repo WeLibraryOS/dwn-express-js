@@ -31,7 +31,7 @@ export class DWN {
   }
 
   static async create(config: Config): Promise<DWN> {
-    config.messageStore = config.messageStore || new MessageStoreLevel({db_constructor: config.dbConstructor});
+    config.messageStore = config.messageStore || new MessageStoreLevel({injectDB: config.injectDB, indexObjects: config.indexObjects});
     config.DIDMethodResolvers = config.DIDMethodResolvers || [];
     config.interfaces = config.interfaces || [];
 
@@ -114,6 +114,7 @@ export type Config = {
   DIDMethodResolvers: DIDMethodResolver[],
   interfaces?: Interface[];
   messageStore?: MessageStore;
-  dbConstructor?: AbstractLevel<any>;
+  injectDB?: AbstractLevel<any, string, Uint8Array>;
   owner?: string; // DID of the DWN owner
+  indexObjects?: object[];
 };

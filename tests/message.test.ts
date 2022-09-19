@@ -3,6 +3,9 @@ import createDWN from "../source/dwn-sdk-wrapper";
 import { KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, TestMethodResolver } from "./helpers";
 import LevelMemory from "level-mem";
 
+// TODO: what is the correct schema for this?
+const SCHEMA_URL = 'https://schema.org';
+
 describe("test message handling", () => {
 
   const testDid = 'did:test:alice';
@@ -16,9 +19,17 @@ describe("test message handling", () => {
     keyPair = await makeKeyPair();
     testResolver.addKey(testDid, keyPair.publicJwk);
     dwn = await createDWN({
-      dbConstructor: new LevelMemory(),
+      injectDB: new LevelMemory(),
       DIDMethodResolvers: [testResolver],
-      owner: testDid
+      owner: testDid,
+      indexObjects: [{
+        data: {
+          issuer: "string",
+        },
+        descriptor: {
+          schema: "string"
+        }
+      }]
     });
   });
 
@@ -63,7 +74,7 @@ describe("test message handling", () => {
     await expect(res.replies![0].status.code).toBe(200);
   })
 
-  test("object storage", async () => {
+  test("object storage and query", async () => {
 
     const data = makeTestVerifiableCredential();
     const dataCid = await makeDataCID(JSON.stringify(data));
@@ -71,7 +82,7 @@ describe("test message handling", () => {
     const descriptor = {
       "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
       "method": "CollectionsWrite",
-      "schema": "https://schema.org/SocialMediaPosting",
+      "schema": SCHEMA_URL,
       "recordId": "b6464162-84af-4aab-aff5-f1f8438dfc1e",
       "dataCid": Buffer.from(dataCid.cid.bytes).toString('base64'),
       "dateCreated": 123456789,
@@ -90,9 +101,38 @@ describe("test message handling", () => {
         }
       ]
     }
-    const res = await dwn.processRequest(messageBody);
+    var res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(202);
+
+    const query_descriptor = {
+      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
+      "method": "CollectionsQuery",
+      "filter": {
+        data: {
+          issuer: "did:example:123",
+        },
+        descriptor: {
+          schema: SCHEMA_URL,
+        }
+      }
+    };
+
+    const query_jws = await makeTestJWS(query_descriptor, keyPair, testDid);
+    
+    const query_message_body  = {
+      "target": testDid,
+      "messages": [
+        {
+          "descriptor": query_descriptor,
+          "authorization": query_jws
+        }
+      ]
+    }
+    res = await dwn.processRequest(query_message_body);
+    await expect(res.replies).toHaveLength(1);
+    await expect(res.replies![0].entries).toHaveLength(1);
+    await expect(res.replies![0].status.code).toBe(200);
   })
 
 });

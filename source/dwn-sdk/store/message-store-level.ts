@@ -31,6 +31,7 @@ export class MessageStoreLevel implements MessageStore {
   // a level-backed inverted index
   // TODO: search-index lib does not import type `SearchIndex`. find a workaround, Issue #48, https://github.com/TBD54566975/dwn-sdk-js/issues/48
   index : SimpleIndex;
+  indexObjects: object[];
 
   /**
    * @param {MessageStoreLevelConfig} config
@@ -46,12 +47,26 @@ export class MessageStoreLevel implements MessageStore {
       ...config
     };
 
-    this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.db_constructor);
+    this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.injectDB);
+
+    this.indexObjects = this.config.indexObjects || [];
+    
+    // make sure we have indexes for PermissionsQuery
+    this.indexObjects.push( {
+      descriptor: {
+        method: 'PermissionsQuery',
+        grantedTo: 'string',
+        grantedBy: 'string',
+        scope: {
+          method: 'CollectionsWrite'
+        }
+      }
+    })
   }
 
   async open(): Promise<void> {
     if (!this.db) {
-      this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.db_constructor);
+      this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.injectDB);
     }
 
     await this.db.open();
@@ -61,18 +76,7 @@ export class MessageStoreLevel implements MessageStore {
     // calling `searchIndex()` twice without closing its DB causes the process to hang (ie. calling this method consecutively),
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
-      this.index = new SimpleIndex(
-        [{
-          descriptor: {
-            method: 'PermissionsQuery',
-            grantedTo: 'string',
-            grantedBy: 'string',
-            scope: {
-              method: 'CollectionsWrite'
-            }
-          }
-        }]
-      )
+      this.index = new SimpleIndex(this.indexObjects);
     }
   }
 
@@ -210,7 +214,8 @@ export class MessageStoreLevel implements MessageStore {
 }
 
 type MessageStoreLevelConfig = {
-  db_constructor?: AbstractLevel<any, string, Uint8Array>,
+  injectDB?: AbstractLevel<any, string, Uint8Array>,
   blockstoreLocation?: string,
   indexLocation?: string,
+  indexObjects?: object[]
 };
