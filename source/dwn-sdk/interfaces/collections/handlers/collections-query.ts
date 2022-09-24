@@ -3,6 +3,7 @@ import type { CollectionsQuerySchema } from '../types';
 import { CollectionsQuery } from '../messages/collections-query';
 import { MessageReply } from '../../../core';
 import { removeUndefinedProperties } from '../../../utils/object';
+import _ from 'lodash';
 
 export const handleCollectionsQuery: MethodHandler = async (
   context,
@@ -27,9 +28,14 @@ export const handleCollectionsQuery: MethodHandler = async (
       throw new Error('`dateSort` not implemented');
     }
 
+    // query format much match message format
+
     const query = {
-      method: 'CollectionsWrite',
-      ...validatedMessage.descriptor.filter
+      data: validatedMessage.descriptor.filter.data,
+      descriptor: {
+        ...(_.omit(validatedMessage.descriptor.filter, 'data')),
+        method: 'CollectionsWrite',
+      }
     };
     removeUndefinedProperties(query);
 

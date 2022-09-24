@@ -112,9 +112,7 @@ describe("test message handling", () => {
         data: {
           issuer: "did:example:123",
         },
-        descriptor: {
-          schema: SCHEMA_URL,
-        }
+        schema: SCHEMA_URL
       }
     };
 

@@ -146,17 +146,9 @@ export class MessageStoreLevel implements MessageStore {
 
   async put(messageJson: BaseMessageSchema, ctx: Context): Promise<void> {
 
-    let data: string | undefined = undefined;
-    if (messageJson['data'] !== undefined) {
-      const messageJsonWithData = messageJson as GenericMessageSchema;
-      data = messageJsonWithData.data;
+    let data: string | undefined = messageJson['data'];
 
-      // delete data. If data is present we'll be chunking it and storing it as unix-fs dag-pb
-      // encoded.
-      delete messageJsonWithData.data;
-    }
-
-    const encodedBlock = await block.encode({ value: messageJson, codec: cbor, hasher: sha256 });
+    const encodedBlock = await block.encode({ value: _.omit(messageJson, 'data'), codec: cbor, hasher: sha256 });
 
     await this.db.put(encodedBlock.cid, encodedBlock.bytes);
 

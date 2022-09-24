@@ -55,6 +55,9 @@ export default class SimpleIndex {
     }
 
     put(id: string, message: any): void {
+        if (message.data && message.descriptor?.schema && message.descriptor?.dataFormat == 'application/json') {
+            message['data'] = JSON.parse(Buffer.from(message['data'], 'base64').toString());
+        }
         const flattened = this.flatten(message);
         for (const key of this.keys) {
             if (flattened.get(key)) {
