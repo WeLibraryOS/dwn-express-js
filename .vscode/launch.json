@@ -36,9 +36,10 @@
             "program": "${workspaceFolder}/dist/index.js"
         },
         {
-            "name": "Launch current file",
+            "name": "Current file",
             "type": "node",
             "request": "launch",
+            "cwd": "${workspaceRoot}",
             "runtimeArgs": [
                 "-r",
                 "ts-node/register"

@@ -5,13 +5,13 @@ import { sha256 } from 'multiformats/hashes/sha2';
 
 // a map of all supported CID hashing algorithms. This map is used to select the appropriate hasher
 // when generating a CID to compare against a provided CID
-const hashers = {
+const hashers: {[index: number]: any} = {
   [sha256.code]: sha256,
 };
 
 // a map of all support codecs.This map is used to select the appropriate codec
 // when generating a CID to compare against a provided CID
-const codecs = {
+const codecs: {[index: number]: any} = {
   [cbor.code]: cbor
 };
 

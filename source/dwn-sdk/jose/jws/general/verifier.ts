@@ -6,6 +6,8 @@ import { base64url } from 'multiformats/bases/base64';
 import { DIDResolver } from '../../../did/did-resolver';
 import { signers as verifiers } from '../../algorithms';
 
+import { TextEncoder, TextDecoder } from "util";
+
 type VerificationResult = {
   /** DIDs of all signers */
   signers: string[];

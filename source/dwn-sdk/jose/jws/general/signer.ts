@@ -2,6 +2,7 @@ import type { GeneralJws, SignatureInput } from './types';
 
 import { base64url } from 'multiformats/bases/base64';
 import { signers } from '../../algorithms';
+import { TextEncoder } from "util";
 
 export class GeneralJwsSigner {
   private jws: GeneralJws;

@@ -5,6 +5,7 @@ import { GeneralJwsSigner, GeneralJwsVerifier } from "../source/dwn-sdk/jose/jws
 import { GeneralJws, SignatureInput } from "../source/dwn-sdk/jose/jws/general/types";
 import { PublicJwk, PrivateJwk } from "../source/dwn-sdk/jose/types";
 import { generateCid } from "../source/dwn-sdk/utils/cid";
+import { TextEncoder } from "util";
 
 export type KeyPair = { publicJwk: PublicJwk, privateJwk: PrivateJwk };
 
@@ -113,4 +114,18 @@ export class TestMethodResolver implements DIDMethodResolver {
 
   export function dataAsBase64(data: any) {
     return Buffer.from(JSON.stringify(data)).toString('base64');
+  }
+
+  export function featureDetectionMessageBody(targetDID: string) {
+    return {
+      "target": targetDID,
+      "messages": [
+        {
+            "descriptor": {
+                "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
+                "method": "FeatureDetectionRead"
+            }
+        }
+      ]
+    }
   }
