@@ -33,7 +33,10 @@
             ],
             "preLaunchTask": "esbuild",
             "args": ["--enable-source-maps"],
-            "program": "${workspaceFolder}/dist/index.js"
+            "program": "${workspaceFolder}/dist/index.js",
+            "env": {
+                "DEBUG": "express:*"
+            },
         },
         {
             "name": "Current file",

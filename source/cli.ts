@@ -11,9 +11,17 @@ async function doStuff() {
 
 doStuff().then(result => {
 
-    fetch('http://localhost:8080', { method: 'POST', body: JSON.stringify(featureDetectionMessageBody('did:test:alice')) }).then((result: any) => {
+  const body = featureDetectionMessageBody('did:test:alice');
+
+    fetch('http://localhost:8080', { 
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      } }).then((result: any) => {
        result.json().then((result: any) => {
-          console.log(result);
+          console.log(JSON.stringify(result, null, 2));
        })
     }).catch((error: any) => {
         console.log(error);
