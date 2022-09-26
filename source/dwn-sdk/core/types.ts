@@ -10,6 +10,7 @@ import { DIDResolver } from '../did/did-resolver';
 export type BaseMessageSchema = {
   descriptor: {
     method: string;
+    nonce?: string;
   };
 };
 

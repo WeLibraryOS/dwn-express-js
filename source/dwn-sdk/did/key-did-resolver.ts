@@ -1,3 +1,5 @@
+import { GeneralJwsVerifier } from '../jose/jws/general';
+import { PublicJwk } from '../jose/types';
 import { DIDMethodResolver, DIDResolutionResult } from './did-resolver';
 
 /**
@@ -20,12 +22,7 @@ export class KeyDidResolver implements DIDMethodResolver {
                   controller: did,    // TODO: it is not correct to use the same did as the controller
                   id           : `${did}#key1`,
                   type         : 'JsonWebKey2020',
-                  publicKeyJwk : {
-                        alg : 'EdDSA',
-                        kty : 'OKP',
-                        crv : 'Ed25519',
-                        x: didParts[2]
-                      },
+                  publicKeyJwk : GeneralJwsVerifier.makeObjectFromBase64UrlString<PublicJwk>(didParts[2])
               }]
       },
       didDocumentMetadata: {}

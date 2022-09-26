@@ -6,6 +6,8 @@ import { GeneralJws, SignatureInput } from "../source/dwn-sdk/jose/jws/general/t
 import { PublicJwk, PrivateJwk } from "../source/dwn-sdk/jose/types";
 import { generateCid } from "../source/dwn-sdk/utils/cid";
 import { TextEncoder } from "util";
+import { Message } from "../source/dwn-sdk";
+import { RequestSchema } from "../source/dwn-sdk/core/types";
 
 export type KeyPair = { publicJwk: PublicJwk, privateJwk: PrivateJwk };
 
@@ -116,7 +118,7 @@ export class TestMethodResolver implements DIDMethodResolver {
     return Buffer.from(JSON.stringify(data)).toString('base64');
   }
 
-  export function featureDetectionMessageBody(targetDID: string) {
+  export function featureDetectionMessageBody(targetDID: string): RequestSchema {
     return {
       "target": targetDID,
       "messages": [
@@ -128,4 +130,25 @@ export class TestMethodResolver implements DIDMethodResolver {
         }
       ]
     }
+  }
+  export async function collectionQueryMessageBody(keyPair: KeyPair, did: string): Promise<RequestSchema> {
+    const descriptor = {
+      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
+      "method": "CollectionsQuery",
+      "filter": {"dataFormat": "json"}
+    };
+
+    const jws = await makeTestJWS(descriptor, keyPair, did);
+    
+    const messageBody  = {
+      "target": did,
+      "messages": [
+        {
+          "descriptor": descriptor,
+          "authorization": jws
+        }
+      ]
+    }
+
+    return messageBody;
   }

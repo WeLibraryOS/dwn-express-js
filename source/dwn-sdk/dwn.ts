@@ -10,6 +10,9 @@ import { DIDResolver } from './did/did-resolver';
 import { Message, MessageReply, Request, Response } from './core';
 import { MessageStoreLevel } from './store/message-store-level';
 import { AbstractLevel } from 'abstract-level';
+import { WebDidResolver } from './did/web-did-resolver';
+import { IonDidResolver } from './did/ion-did-resolver';
+import { KeyDidResolver } from './did/key-did-resolver';
 
 export class DWN {
   static interfaces: Interface[] = [
@@ -18,6 +21,10 @@ export class DWN {
     FeatureDetectionInterface
   ];
 
+  static builtInResolvers: DIDMethodResolver[] = [
+    new WebDidResolver(), new IonDidResolver(), new KeyDidResolver()
+  ]
+
   static methodHandlers: {[method: string]: MethodHandler};
 
   DIDResolver: DIDResolver;
@@ -25,7 +32,8 @@ export class DWN {
   owner?: string;
 
   private constructor(config: Config) {
-    this.DIDResolver = new DIDResolver(config.DIDMethodResolvers);
+    // TODO: dedupe resolvers list
+    this.DIDResolver = new DIDResolver(DWN.builtInResolvers.concat(config.DIDMethodResolvers || []));
     this.messageStore = config.messageStore!;
     this.owner = config.owner;
   }

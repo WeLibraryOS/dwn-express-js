@@ -1,6 +1,6 @@
 import { DWN } from "../source/dwn-sdk";
 import createDWN from "../source/dwn-sdk-wrapper";
-import { featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, TestMethodResolver } from "./helpers";
+import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, TestMethodResolver } from "./helpers";
 import LevelMemory from "level-mem";
 
 // TODO: what is the correct schema for this?
@@ -41,24 +41,7 @@ describe("test message handling", () => {
   });
 
   test("collection query", async () => {
-
-    const descriptor = {
-      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
-      "method": "CollectionsQuery",
-      "filter": {"dataFormat": "json"}
-    };
-
-    const jws = await makeTestJWS(descriptor, keyPair, testDid);
-    
-    const messageBody  = {
-      "target": testDid,
-      "messages": [
-        {
-          "descriptor": descriptor,
-          "authorization": jws
-        }
-      ]
-    }
+    const messageBody = await collectionQueryMessageBody(keyPair, testDid);
     const res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(200);

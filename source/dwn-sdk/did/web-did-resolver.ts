@@ -2,9 +2,9 @@ import crossFetch from 'cross-fetch';
 import { DIDMethodResolver, DIDResolutionResult } from './did-resolver';
 
 /**
- * Resolver for ION DIDs.
+ * Resolver for Web DIDs.
  */
-export class IonDidResolver implements DIDMethodResolver {
+export class WebDidResolver implements DIDMethodResolver {
   // cross-platform fetch
   private fetch = crossFetch;
 

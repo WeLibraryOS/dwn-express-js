@@ -26,6 +26,13 @@ export class GeneralJwsSigner {
     return signer;
   }
 
+  static makeBase64UrlStringFromObject(o: object): string {
+    const jsonString = JSON.stringify(o);
+    const bytes = new TextEncoder().encode(jsonString);
+    const base64 = base64url.baseEncode(bytes);
+    return base64
+  } 
+
   async addSignature(signatureInput: SignatureInput): Promise<void> {
     const { jwkPrivate, protectedHeader } = signatureInput;
     const signer = signers[jwkPrivate.crv];
@@ -34,9 +41,7 @@ export class GeneralJwsSigner {
       throw new Error(`unsupported crv. crv must be one of ${Object.keys(signers)}`);
     }
 
-    const protectedHeaderString = JSON.stringify(protectedHeader);
-    const protectedHeaderBytes = new TextEncoder().encode(protectedHeaderString);
-    const protectedHeaderBase64UrlString = base64url.baseEncode(protectedHeaderBytes);
+    const protectedHeaderBase64UrlString = GeneralJwsSigner.makeBase64UrlStringFromObject(protectedHeader);
 
     const signingInputBase64urlString = `${protectedHeaderBase64UrlString}.${this.jws.payload}`;
     const signingInputBytes = new TextEncoder().encode(signingInputBase64urlString);

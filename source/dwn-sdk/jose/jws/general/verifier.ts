@@ -1,5 +1,5 @@
 import type { GeneralJws, Signature } from './types';
-import type { PublicJwk } from '../../types';
+import type { Jwk, PublicJwk } from '../../types';
 import type { VerificationMethod } from '../../../did/did-resolver';
 
 import { base64url } from 'multiformats/bases/base64';
@@ -21,16 +21,21 @@ export class GeneralJwsVerifier {
     this.jws = jws;
   }
 
+  static makeObjectFromBase64UrlString<TT>(base64UrlString: string): TT {
+    const bytes = base64url.baseDecode(base64UrlString);
+    const jsonString = new TextDecoder().decode(bytes);
+    const o: TT = JSON.parse(jsonString);
+    return o;
+  }
+
   async verify(didResolver: DIDResolver): Promise<VerificationResult> {
     const signers: string[] = [];
 
     for (const signature of this.jws.signatures) {
-      const protectedBytes = base64url.baseDecode(signature.protected);
-      const protectedJson = new TextDecoder().decode(protectedBytes);
 
-      const { kid } = JSON.parse(protectedJson);
-      const did = GeneralJwsVerifier.extractDid(kid);
-      const publicJwk = await GeneralJwsVerifier.getPublicKey(did, kid, didResolver);
+      const o: Jwk = GeneralJwsVerifier.makeObjectFromBase64UrlString<Jwk>(signature.protected);
+      const did = GeneralJwsVerifier.extractDid(o.kid!);
+      const publicJwk = await GeneralJwsVerifier.getPublicKey(did, o.kid!, didResolver);
 
       const isVerified = await GeneralJwsVerifier.verifySignature(this.jws.payload, signature, publicJwk);
 
