@@ -2,10 +2,14 @@ import { KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCrede
 import fetch from "cross-fetch";
 import { RequestSchema } from "./dwn-sdk/core/types";
 import {GeneralJwsSigner} from "./dwn-sdk/jose/jws/general/signer";
+import  dotenv  from "dotenv";
+dotenv.config();
 
 let aliceKey: KeyPair;
 let bobKey: KeyPair;
 let aliceDid: string;
+
+const DWN_HOST = process.env.DWN_HOST || 'http://localhost:8080';
 
 
 async function doStuff() {
@@ -16,7 +20,7 @@ async function doStuff() {
 }
 
 async function postOneRequest(request: RequestSchema) {
-  fetch('http://localhost:8080', { 
+  fetch(DWN_HOST, { 
     method: 'POST',
     body: JSON.stringify(request),
     headers: {

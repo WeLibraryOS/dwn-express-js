@@ -1,6 +1,8 @@
 import { DWN } from "./dwn-sdk";
 import express, { Application } from "express";
 import createDWN from "./dwn-sdk-wrapper";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app: Application = express();
 app.use(express.json());
