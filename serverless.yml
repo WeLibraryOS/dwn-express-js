@@ -1,0 +1,30 @@
+# serverless.yml
+
+service: dwn-express-js
+
+plugins:
+  - serverless-esbuild
+
+custom:
+  esbuild:
+    packager: pnpm
+    plugins: esbuildWasmPlugin.cjs
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+  timeout: 29
+  httpApi:
+    cors: true
+  environment: 
+    INJECT_LEVEL_DB: LevelMemory
+
+functions:
+  dwn:
+    handler: lambda.handler
+    memorySize: 2048
+    events:
+      - httpApi: 'GET /ping'
+      - httpApi: 'POST /'
