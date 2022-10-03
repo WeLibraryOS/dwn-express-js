@@ -4,7 +4,7 @@ import createDWN from "./dwn-sdk-wrapper";
 
 const app: Application = express();
 app.use(express.json());
-const port = 8080; // default port to listen
+const port = process.env['PORT'] || 8080; // default port to listen
 
 let dwn: DWN;
 
