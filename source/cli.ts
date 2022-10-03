@@ -16,7 +16,10 @@ async function doStuff() {
 }
 
 async function postOneRequest(request: RequestSchema) {
-  fetch('http://localhost:8080', { 
+
+  const host_url = process.env['HOST_URL'] || "http://localhost:8080";
+
+  fetch(host_url, { 
     method: 'POST',
     body: JSON.stringify(request),
     headers: {
