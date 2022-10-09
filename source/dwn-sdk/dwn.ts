@@ -9,11 +9,9 @@ import { CollectionsInterface, PermissionsInterface, FeatureDetectionInterface }
 import { DIDResolver } from './did/did-resolver';
 import { Message, MessageReply, Request, Response } from './core';
 import { MessageStoreLevel } from './store/message-store-level';
-import { AbstractLevel } from 'abstract-level';
 import { WebDidResolver } from './did/web-did-resolver';
 import { IonDidResolver } from './did/ion-did-resolver';
 import { KeyDidResolver } from './did/key-did-resolver';
-import LevelMemory from "level-mem";
 
 export class DWN {
   static interfaces: Interface[] = [
@@ -39,15 +37,8 @@ export class DWN {
     this.owner = config.owner;
   }
 
-  static injectLevelDBFromENV(): AbstractLevel<any, string, Uint8Array> | undefined {
-    const inject_level = process.env.INJECT_LEVEL_DB;
-
-    return inject_level == 'LevelMemory' ? new LevelMemory() : undefined;
-  }
-
-
   static async create(config: Config): Promise<DWN> {
-    config.messageStore = config.messageStore || new MessageStoreLevel({injectDB: config.injectDB || DWN.injectLevelDBFromENV(), indexObjects: config.indexObjects});
+    config.messageStore = config.messageStore || new MessageStoreLevel({injectDB: config.injectDB, indexObjects: config.indexObjects});
     config.DIDMethodResolvers = config.DIDMethodResolvers || [];
     config.interfaces = config.interfaces || [];
 

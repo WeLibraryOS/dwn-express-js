@@ -2,7 +2,7 @@ import type { Context } from '../types';
 import type { GenericMessageSchema, BaseMessageSchema } from '../core/types';
 import type { MessageStore } from './message-store';
 
-import { BlockstoreLevel } from './blockstore-level';
+import { BlockstoreDynamo } from './blockstore-dynamo';
 import { CID } from 'multiformats/cid';
 import { importer } from 'ipfs-unixfs-importer';
 import { parseCid } from '../utils/cid';
@@ -18,15 +18,13 @@ import _ from 'lodash';
 import { exporter } from 'ipfs-unixfs-exporter';
 import { base64url } from 'multiformats/bases/base64';
 
-import { AbstractLevel } from 'abstract-level';
-
 /**
  * A simple implementation of {@link MessageStore} that works in both the browser and server-side.
  * Leverages LevelDB under the hood.
  */
 export class MessageStoreLevel implements MessageStore {
   config: MessageStoreLevelConfig;
-  db: BlockstoreLevel;
+  db: BlockstoreDynamo;
   // levelDB doesn't natively provide the querying capabilities needed for DWN. To accommodate, we're leveraging
   // a level-backed inverted index
   // TODO: search-index lib does not import type `SearchIndex`. find a workaround, Issue #48, https://github.com/TBD54566975/dwn-sdk-js/issues/48
@@ -47,8 +45,6 @@ export class MessageStoreLevel implements MessageStore {
       ...config
     };
 
-    this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.injectDB);
-
     this.indexObjects = this.config.indexObjects || [];
     
     // make sure we have indexes for PermissionsQuery
@@ -66,7 +62,7 @@ export class MessageStoreLevel implements MessageStore {
 
   async open(): Promise<void> {
     if (!this.db) {
-      this.db = new BlockstoreLevel(this.config.blockstoreLocation!, this.config.injectDB);
+      this.db = new BlockstoreDynamo(this.config.blockstoreLocation!, this.config.injectDB);
     }
 
     await this.db.open();
@@ -206,7 +202,7 @@ export class MessageStoreLevel implements MessageStore {
 }
 
 type MessageStoreLevelConfig = {
-  injectDB?: AbstractLevel<any, string, Uint8Array>,
+  injectDB?: any,
   blockstoreLocation?: string,
   indexLocation?: string,
   indexObjects?: object[]

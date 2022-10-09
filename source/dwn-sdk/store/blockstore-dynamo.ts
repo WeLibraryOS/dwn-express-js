@@ -2,18 +2,18 @@ import type { Blockstore, Options } from 'interface-blockstore';
 import type { Context } from '../types';
 import type { AwaitIterable, Pair, Batch, Query, KeyQuery } from 'interface-store';
 
-import { Level } from 'level';
 import { CID } from 'multiformats';
+import { nil } from 'ajv';
 
-import { AbstractLevel } from 'abstract-level';
+import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput } from "@aws-sdk/client-dynamodb";
 
 
 // `level` works in Node.js 12+ and Electron 5+ on Linux, Mac OS, Windows and
 // FreeBSD, including any future Node.js and Electron release thanks to Node-API, including ARM
 // platforms like Raspberry Pi and Android, as well as in Chrome, Firefox, Edge, Safari, iOS Safari
 //  and Chrome for Android.
-export class BlockstoreLevel implements Blockstore {
-  db: AbstractLevel<any, string, Uint8Array>;
+export class BlockstoreDynamo implements Blockstore {
+  db: any;
 
   /**
    * @param location - must be a directory path (relative or absolute) where LevelDB will store its
@@ -21,40 +21,19 @@ export class BlockstoreLevel implements Blockstore {
    * the {@link https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase IDBDatabase}
    * to be opened.
    */
-  constructor(location: string, abstract_db?: AbstractLevel<any, string, Uint8Array>) {
-    this.db = abstract_db  || new Level(location, { keyEncoding: 'utf8', valueEncoding: 'binary' });
+  constructor(location: string, abstract_db?: any) {
+    this.db = abstract_db  || new DynamoDBClient({ region: "us-west-2" })
   }
 
   async open(): Promise<void> {
-    while (this.db.status === 'opening' || this.db.status === 'closing') {
-      await sleep(200);
-    }
-
-    if (this.db.status === 'open') {
-      return;
-    }
-
-    // db.open() is automatically called by the database constructor. We're calling it explicitly
-    // in order to explicitly catch an error that would otherwise not surface
-    // until another method like db.get() is called. Once open() has then been called,
-    // any read & write operations will again be queued internally
-    // until opening has finished.
-    return this.db.open();
+    
   }
 
   /**
    * releases all file handles and locks held by the underlying db.
    */
   async close(): Promise<void> {
-    while (this.db.status === 'opening' || this.db.status === 'closing') {
-      await sleep(200);
-    }
-
-    if (this.db.status === 'closed') {
-      return;
-    }
-
-    return this.db.close();
+    
   }
 
   put(key: CID, val: Uint8Array, _ctx?: Options): Promise<void> {
