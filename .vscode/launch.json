@@ -50,7 +50,10 @@
             "args": [
                 "${file}",
 
-            ]
+            ],
+            "env": {
+                // "DWN_HOST": "https://a5ky6yjl74.execute-api.us-east-1.amazonaws.com/dev"
+            },
         }
     ]
 }

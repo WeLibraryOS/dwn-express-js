@@ -21,36 +21,42 @@ export class BlockstoreDynamo implements Blockstore {
    * to be opened.
    */
   constructor(location: string, abstract_db?: any) {
-    this.db = abstract_db  || new DynamoDBClient({ region: "us-west-2" })
+    this.db = abstract_db  || new DynamoDBClient({})
   }
 
   async open(): Promise<void> {
     // set up tables if they don't exist
     const listTablesCommand = new ListTablesCommand({});
-    const tables = await this.db.send(listTablesCommand);
-    if (!tables.TableNames!.includes('blocks')) {
-      const params: CreateTableCommandInput = {
-        TableName: 'blocks',
-        KeySchema: [
-          {
-            AttributeName: 'cid',
-            KeyType: 'HASH'
+    this.db.send(listTablesCommand).then(async (data) => {
+      if (data.TableNames!.includes('blocks')) {
+        console.log('blocks table already exists');
+      } else {
+        console.log('creating blocks table');
+        const params: CreateTableCommandInput = {
+          TableName: 'blocks',
+          KeySchema: [
+            {
+              AttributeName: 'cid',
+              KeyType: 'HASH'
+            }
+          ],
+          AttributeDefinitions: [
+            {
+              AttributeName: 'cid',
+              AttributeType: 'S'
+            },
+            
+          ],
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 5,
+            WriteCapacityUnits: 5
           }
-        ],
-        AttributeDefinitions: [
-          {
-            AttributeName: 'cid',
-            AttributeType: 'S'
-          },
-          
-        ],
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 5,
-          WriteCapacityUnits: 5
-        }
-      };
-      await this.db.send(new CreateTableCommand(params));
-    }
+        };
+        await this.db.send(new CreateTableCommand(params));
+      }}
+    ).catch((err) => {
+      console.error(`listTablesCommand: ${err}`);
+    })
   }
 
   /**

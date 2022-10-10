@@ -1,3 +1,5 @@
+org: peteoleary
+app: dwn-express-js
 # serverless.yml
 
 service: dwn-express-js
@@ -16,15 +18,42 @@ provider:
   stage: dev
   region: us-east-1
   timeout: 29
-  httpApi:
-    cors: true
-  environment: 
-    INJECT_LEVEL_DB: LevelMemory
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:DescribeTable
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - { "Fn::GetAtt": ["blocksTable", "Arn" ] }
+
 
 functions:
   dwn:
     handler: lambda.handler
     memorySize: 2048
     events:
-      - httpApi: 'GET /ping'
-      - httpApi: 'POST /'
+      - http: 'GET /ping'
+      - http: 'POST /'
+
+resources: # CloudFormation template syntax from here on.
+  Resources:
+    blocksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: blocks
+        AttributeDefinitions:
+          - AttributeName: cid
+            AttributeType: S
+        KeySchema:
+          - AttributeName: cid
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

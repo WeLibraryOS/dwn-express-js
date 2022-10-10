@@ -16,6 +16,10 @@ app.get("/ping", (req, res) => {
 });
 
 app.post("/", async (req, res) => {
+  if (!dwn) {
+    console.log(`creating DWN`);
+    dwn = await createDWN();
+  }
   const response = await dwn.processRequest(req.body);
   res.json(response);
 });
@@ -23,7 +27,6 @@ app.post("/", async (req, res) => {
 // start the Express server
 app.listen(port, async () => {
   console.log(`server started at http://localhost:${port}`);
-  dwn = await createDWN()
 });
 
 export default app;
