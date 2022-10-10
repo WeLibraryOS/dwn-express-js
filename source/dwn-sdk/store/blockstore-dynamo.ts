@@ -3,9 +3,8 @@ import type { Context } from '../types';
 import type { AwaitIterable, Pair, Batch, Query, KeyQuery } from 'interface-store';
 
 import { CID } from 'multiformats';
-import { nil } from 'ajv';
 
-import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
 
 
 // `level` works in Node.js 12+ and Electron 5+ on Linux, Mac OS, Windows and
@@ -13,7 +12,7 @@ import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput } from "@aw
 // platforms like Raspberry Pi and Android, as well as in Chrome, Firefox, Edge, Safari, iOS Safari
 //  and Chrome for Android.
 export class BlockstoreDynamo implements Blockstore {
-  db: any;
+  db: DynamoDBClient;
 
   /**
    * @param location - must be a directory path (relative or absolute) where LevelDB will store its
@@ -26,7 +25,32 @@ export class BlockstoreDynamo implements Blockstore {
   }
 
   async open(): Promise<void> {
-    
+    // set up tables if they don't exist
+    const listTablesCommand = new ListTablesCommand({});
+    const tables = await this.db.send(listTablesCommand);
+    if (!tables.TableNames!.includes('blocks')) {
+      const params: CreateTableCommandInput = {
+        TableName: 'blocks',
+        KeySchema: [
+          {
+            AttributeName: 'cid',
+            KeyType: 'HASH'
+          }
+        ],
+        AttributeDefinitions: [
+          {
+            AttributeName: 'cid',
+            AttributeType: 'S'
+          },
+          
+        ],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 5,
+          WriteCapacityUnits: 5
+        }
+      };
+      await this.db.send(new CreateTableCommand(params));
+    }
   }
 
   /**
@@ -36,23 +60,16 @@ export class BlockstoreDynamo implements Blockstore {
     
   }
 
-  put(key: CID, val: Uint8Array, _ctx?: Options): Promise<void> {
-    return this.db.put(key.toString(), val);
+  async put(key: CID, val: Uint8Array, _ctx?: Options): Promise<void> {
+    const put_command = new PutItemCommand({  TableName: 'blocks', Item: { cid: {S: key.toString()}, data: {B: val} } });
+    const put_result =  await this.db.send(put_command);
+    return Promise.resolve();
   }
 
   async get(key: CID, _ctx?: Options): Promise<Uint8Array> {
-    try {
-      const val = await this.db.get(key.toString());
-      // TODO: set up database internal storage correctly so we don't have to do this
-      return new Uint8Array(val.split(',').map((c) => parseInt(c, 10)));
-    } catch (e) {
-      // level throws an error if the key is not present. Return empty array instead.
-      if (e.code === 'LEVEL_NOT_FOUND') {
-        return Promise.resolve(new Uint8Array());
-      } else {
-        throw e;
-      }
-    }
+    const get_command = new GetItemCommand({ TableName: 'blocks', Key: { cid: {S: key.toString()} } });
+    const get_result = await this.db.send(get_command);
+    return get_result.Item!.data.B!;
   }
 
   async has(key: CID, _ctx?: Options): Promise<boolean> {

@@ -1,10 +1,6 @@
 import { DWN } from "../source/dwn-sdk";
 import createDWN from "../source/dwn-sdk-wrapper";
-import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, TestMethodResolver } from "./helpers";
-import LevelMemory from "level-mem";
-
-// TODO: what is the correct schema for this?
-const SCHEMA_URL = 'https://schema.org';
+import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, makeWriteVCMessageBody, TestMethodResolver } from "./helpers";
 
 describe("test message handling", () => {
 
@@ -49,31 +45,8 @@ describe("test message handling", () => {
 
   test("object storage and query", async () => {
 
-    const data = makeTestVerifiableCredential();
-    const dataCid = await makeDataCID(JSON.stringify(data));
-
-    const descriptor = {
-      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
-      "method": "CollectionsWrite",
-      "schema": SCHEMA_URL,
-      "recordId": "b6464162-84af-4aab-aff5-f1f8438dfc1e",
-      "dataCid": Buffer.from(dataCid.cid.bytes).toString('base64'),
-      "dateCreated": 123456789,
-      "dataFormat": "application/json"
-    };
-
-    const jws = await makeTestJWS(descriptor, keyPair, testDid);
+    const messageBody = makeWriteVCMessageBody()
     
-    const messageBody  = {
-      "target": testDid,
-      "messages": [
-        {
-          "data": Buffer.from(dataCid.data).toString('base64'),
-          "descriptor": descriptor,
-          "authorization": jws
-        }
-      ]
-    }
     var res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(202);

@@ -9,6 +9,9 @@ import { TextEncoder } from "util";
 import { Message } from "../source/dwn-sdk";
 import { RequestSchema } from "../source/dwn-sdk/core/types";
 
+// TODO: what is the correct schema for this?
+export const SCHEMA_URL = 'https://schema.org';
+
 export type KeyPair = { publicJwk: PublicJwk, privateJwk: PrivateJwk };
 
 export async function makeKeyPair() {
@@ -135,7 +138,7 @@ export class TestMethodResolver implements DIDMethodResolver {
     const descriptor = {
       "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
       "method": "CollectionsQuery",
-      "filter": {"dataFormat": "json"}
+      "filter": {"dataFormat": "application/json"}
     };
 
     const jws = await makeTestJWS(descriptor, keyPair, did);
@@ -152,3 +155,34 @@ export class TestMethodResolver implements DIDMethodResolver {
 
     return messageBody;
   }
+
+  export async function makeWriteVCMessageBody(keyPair: KeyPair, did: string): Promise<RequestSchema> {
+    const data = makeTestVerifiableCredential();
+    const dataCid = await makeDataCID(JSON.stringify(data));
+
+    const descriptor = {
+      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
+      "method": "CollectionsWrite",
+      "schema": SCHEMA_URL,
+      "recordId": "b6464162-84af-4aab-aff5-f1f8438dfc1e",
+      "dataCid": Buffer.from(dataCid.cid.bytes).toString('base64'),
+      "dateCreated": 123456789,
+      "dataFormat": "application/json"
+    };
+
+    const jws = await makeTestJWS(descriptor, keyPair, did);
+    
+    const messageBody  = {
+      "target": did,
+      "messages": [
+        {
+          "data": Buffer.from(dataCid.data).toString('base64'),
+          "descriptor": descriptor,
+          "authorization": jws
+        }
+      ]
+    }
+
+    return messageBody;
+  }
+

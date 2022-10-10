@@ -53,6 +53,7 @@ export class MessageStoreLevel implements MessageStore {
         method: 'PermissionsQuery',
         grantedTo: 'string',
         grantedBy: 'string',
+        dataFormat: 'string',
         scope: {
           method: 'CollectionsWrite'
         }
