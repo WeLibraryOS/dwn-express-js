@@ -12,6 +12,7 @@ async function doStuff() {
   const bobKey = await makeKeyPair();
 
   const aliceDid = `did:key:${GeneralJwsSigner.makeBase64UrlStringFromObject(aliceKey.publicJwk)}`;
+  const bobDid = `did:key:${GeneralJwsSigner.makeBase64UrlStringFromObject(bobKey.publicJwk)}`;
 
   await postOneRequest(featureDetectionMessageBody(aliceDid));
 

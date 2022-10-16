@@ -32,6 +32,9 @@ provider:
             - dynamodb:DeleteItem
           Resource:
             - { "Fn::GetAtt": ["blocksTable", "Arn" ] }
+  environment:
+    DWN_OWNER: !Sub 'did:web:${ApiGatewayRestApi}.execute-api.${aws:region}.amazonaws.com:${sls:stage}:did:alice'
+
 
 
 functions:
