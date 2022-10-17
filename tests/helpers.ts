@@ -73,7 +73,7 @@ export class TestMethodResolver implements DIDMethodResolver {
     return { cid: cid, data: dataBytes };
   }
 
-  export function makeTestVerifiableCredential() {
+  export function makeTestVerifiableCredential(issuerDid: string, subjectDid: string) {
     return {
         "@context": [
           "https://www.w3.org/2018/credentials/v1",
@@ -84,21 +84,14 @@ export class TestMethodResolver implements DIDMethodResolver {
           "VerifiableCredential",
           "UniversityDegreeCredential"
         ],
-        "issuer": "did:example:123",
+        "issuer": issuerDid,
         "issuanceDate": "2020-03-10T04:24:12.164Z",
         "credentialSubject": {
-          "id": "did:example:456",
+          "id": subjectDid,
           "degree": {
             "type": "BachelorDegree",
             "name": "Bachelor of Science and Arts"
           }
-        },
-        "proof": {
-          "type": "EcdsaSecp256k1Signature2019",
-          "created": "2020-03-10T04:24:12.164Z",
-          "proofPurpose": "assertionMethod",
-          "verificationMethod": "did:example:123#key1",
-          "jws": "eyJhbGciOiJFUzI1NksifQ.."
         }
       }
   }
