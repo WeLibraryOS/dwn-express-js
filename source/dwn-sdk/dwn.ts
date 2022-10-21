@@ -35,6 +35,7 @@ export class DWN {
     this.DIDResolver = new DIDResolver(DWN.builtInResolvers.concat(config.DIDMethodResolvers || []));
     this.messageStore = config.messageStore!;
     this.owner = config.owner;
+    console.log(`DWN instance created with owner ${this.owner}`);
   }
 
   static async create(config: Config): Promise<DWN> {
@@ -78,7 +79,7 @@ export class DWN {
 
     try {
       request = Request.parse(rawRequest);
-    } catch (e) {
+    } catch (e: any) {
       return new Response({
         status: { code: 400, message: e.message }
       });
@@ -105,7 +106,7 @@ export class DWN {
 
     try {
       message = Message.parse(rawMessage);
-    } catch (e) {
+    } catch (e: any) {
       return new MessageReply({
         status: { code: 400, message: e.message }
       });
@@ -121,7 +122,7 @@ export type Config = {
   DIDMethodResolvers: DIDMethodResolver[],
   interfaces?: Interface[];
   messageStore?: MessageStore;
-  injectDB?: AbstractLevel<any, string, Uint8Array>;
+  injectDB?: any;
   owner?: string; // DID of the DWN owner
   indexObjects?: object[];
 };

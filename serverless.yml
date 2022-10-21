@@ -33,7 +33,8 @@ provider:
           Resource:
             - { "Fn::GetAtt": ["blocksTable", "Arn" ] }
   environment:
-    DWN_OWNER: !Sub 'did:web:${ApiGatewayRestApi}.execute-api.${aws:region}.amazonaws.com:${sls:stage}:did:alice'
+    DWN_LOCATION: !Sub 'did:web:${ApiGatewayRestApi}.execute-api.${aws:region}.amazonaws.com:${sls:stage}'
+    DWN_OWNER: did:key:eyJhbGciOiJFUzI1NksiLCJrdHkiOiJFQyIsImNydiI6InNlY3AyNTZrMSIsIngiOiJQM2gwcFl5S0dJa0RGQVMzQno2OGgzVllNakdka3o4eGJUcVFHSXdWZkdJIiwieSI6ImczN2RFTEhnZnJqS2FWcktiN2hkWUNKbHozTGI1R3lxZXNFQXUwOUJpcTgifQ
 
 
 

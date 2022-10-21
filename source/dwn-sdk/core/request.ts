@@ -20,7 +20,7 @@ export class Request {
     return rawRequest as RequestSchema;
   }
 
-  static createFromMessage(target: string, message: BaseMessageSchema): Request {
+  static createFromMessage(target: string, message: BaseMessageSchema): RequestSchema {
     return {
       target,
       messages: [message]

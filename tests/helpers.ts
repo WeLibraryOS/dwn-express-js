@@ -6,8 +6,9 @@ import { GeneralJws, SignatureInput } from "../source/dwn-sdk/jose/jws/general/t
 import { PublicJwk, PrivateJwk } from "../source/dwn-sdk/jose/types";
 import { generateCid } from "../source/dwn-sdk/utils/cid";
 import { TextEncoder } from "util";
-import { Message } from "../source/dwn-sdk";
+import { Request } from "../source/dwn-sdk/core/request";
 import { RequestSchema } from "../source/dwn-sdk/core/types";
+import { PermissionsGrant } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-grant";
 
 // TODO: what is the correct schema for this?
 export const SCHEMA_URL = 'https://schema.org';
@@ -186,3 +187,16 @@ export class TestMethodResolver implements DIDMethodResolver {
     return messageBody;
   }
 
+  export async function makePermissionGrantMessageBody(grantorKeys: KeyPair, grantorDid: string, granteeDid: string): Promise<RequestSchema> {
+    const aliceSignatureInput = makeSignatureInput(grantorKeys.privateJwk, grantorDid);
+
+    const permissionsGrant = await PermissionsGrant.create({
+      description : 'alice gives bob permission',
+      grantedBy   : grantorDid,
+      grantedTo   : granteeDid,
+      scope       : { method: 'CollectionsWrite' },
+      signatureInput: aliceSignatureInput
+    });
+
+    return Request.createFromMessage(granteeDid, permissionsGrant.toObject());
+  }

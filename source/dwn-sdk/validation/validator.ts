@@ -1,13 +1,13 @@
-import Ajv from 'ajv';
+import Ajv, { AnySchema } from 'ajv';
 import { schemas } from './json-schemas';
 
 const validator = new Ajv();
 
 for (const schemaName in schemas) {
-  addSchema(schemaName, schemas[schemaName]);
+  addSchema(schemaName, schemas[schemaName as keyof typeof schemas]);
 }
 
-export function addSchema(schemaName: string, schema): void {
+export function addSchema(schemaName: string, schema: AnySchema): void {
   validator.addSchema(schema, schemaName);
 }
 

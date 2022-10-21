@@ -2,6 +2,7 @@ import { DWN } from "./dwn-sdk";
 import express, { Application } from "express";
 import createDWN from "./dwn-sdk-wrapper";
 import dotenv from "dotenv";
+import { env } from "process";
 dotenv.config();
 
 const app: Application = express();
@@ -18,7 +19,7 @@ app.get("/ping", (req, res) => {
 app.post("/", async (req, res) => {
   if (!dwn) {
     console.log(`creating DWN`);
-    dwn = await createDWN();
+    dwn = await createDWN({owner: process.env.DWN_OWNER});
   }
   const response = await dwn.processRequest(req.body);
   res.json(response);
