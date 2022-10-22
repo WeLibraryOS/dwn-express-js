@@ -5,7 +5,8 @@ import type { AwaitIterable, Pair, Batch, Query, KeyQuery } from 'interface-stor
 import { CID } from 'multiformats';
 
 import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
-
+import { create_table } from './dynamodb_helpers';
+import { create } from 'domain';
 
 // `level` works in Node.js 12+ and Electron 5+ on Linux, Mac OS, Windows and
 // FreeBSD, including any future Node.js and Electron release thanks to Node-API, including ARM
@@ -26,37 +27,7 @@ export class BlockstoreDynamo implements Blockstore {
 
   async open(): Promise<void> {
     // set up tables if they don't exist
-    const listTablesCommand = new ListTablesCommand({});
-    this.db.send(listTablesCommand).then(async (data) => {
-      if (data.TableNames!.includes('blocks')) {
-        console.log('blocks table already exists');
-      } else {
-        console.log('creating blocks table');
-        const params: CreateTableCommandInput = {
-          TableName: 'blocks',
-          KeySchema: [
-            {
-              AttributeName: 'cid',
-              KeyType: 'HASH'
-            }
-          ],
-          AttributeDefinitions: [
-            {
-              AttributeName: 'cid',
-              AttributeType: 'S'
-            },
-            
-          ],
-          ProvisionedThroughput: {
-            ReadCapacityUnits: 5,
-            WriteCapacityUnits: 5
-          }
-        };
-        await this.db.send(new CreateTableCommand(params));
-      }}
-    ).catch((err) => {
-      console.error(`listTablesCommand: ${err}`);
-    })
+    create_table(this.db, 'blocks');
   }
 
   /**

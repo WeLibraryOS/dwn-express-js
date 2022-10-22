@@ -12,43 +12,38 @@ import { toBytes } from '../utils/data';
 import * as cbor from '@ipld/dag-cbor';
 import * as block from 'multiformats/block';
 
-import SimpleIndex from './simple-index';
-
 import _ from 'lodash';
 import { exporter } from 'ipfs-unixfs-exporter';
 import { base64url } from 'multiformats/bases/base64';
+
+import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
+import { create_table } from './dynamodb_helpers';
 
 /**
  * A simple implementation of {@link MessageStore} that works in both the browser and server-side.
  * Leverages LevelDB under the hood.
  */
-export class MessageStoreLevel implements MessageStore {
-  config: MessageStoreLevelConfig;
+export class MessageStoreDynamo implements MessageStore {
+  config: MessageStoreDynamoConfig;
   db: BlockstoreDynamo;
-  // levelDB doesn't natively provide the querying capabilities needed for DWN. To accommodate, we're leveraging
-  // a level-backed inverted index
-  // TODO: search-index lib does not import type `SearchIndex`. find a workaround, Issue #48, https://github.com/TBD54566975/dwn-sdk-js/issues/48
-  index : SimpleIndex;
-  indexObjects: object[];
-
+  index: DynamoDBClient;
   /**
-   * @param {MessageStoreLevelConfig} config
+   * @param {MessageStoreDynamoConfig} config
    * @param {string} config.blockstoreLocation - must be a directory path (relative or absolute) where
    *  LevelDB will store its files, or in browsers, the name of the
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase IDBDatabase} to be opened.
    * @param {string} config.indexLocation - same as config.blockstoreLocation
    */
-  constructor(config: MessageStoreLevelConfig = {}) {
+  constructor(config: MessageStoreDynamoConfig = {}) {
     this.config = {
       blockstoreLocation : 'BLOCKSTORE',
       indexLocation      : 'INDEX',
       ...config
     };
 
-    this.indexObjects = this.config.indexObjects || [];
     
-    // make sure we have indexes for PermissionsQuery
-    this.indexObjects.push( {
+    // TODO use this schema to set up messages table in dynamo
+    const index_schema = {
       descriptor: {
         method: 'PermissionsQuery',
         grantedTo: 'string',
@@ -58,7 +53,7 @@ export class MessageStoreLevel implements MessageStore {
           method: 'CollectionsWrite'
         }
       }
-    })
+    }
   }
 
   async open(): Promise<void> {
@@ -73,7 +68,8 @@ export class MessageStoreLevel implements MessageStore {
     // calling `searchIndex()` twice without closing its DB causes the process to hang (ie. calling this method consecutively),
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
-      this.index = new SimpleIndex(this.indexObjects);
+      this.index = new DynamoDBClient({});
+      create_table(this.index, 'messages');
     }
   }
 
@@ -118,8 +114,7 @@ export class MessageStoreLevel implements MessageStore {
 
     const messages: BaseMessageSchema[] = [];
 
-    // parse query into a query that is compatible with the index we're using
-    // const indexQueryTerms: string[] = MessageStoreLevel.buildIndexQueryTerms(query);
+    // TODO: query dynamodb here
 
     const indexResults = this.index.query(query);
 
@@ -192,7 +187,7 @@ export class MessageStoreLevel implements MessageStore {
       const val = query[property];
 
       if (_.isPlainObject(val)) {
-        MessageStoreLevel.buildIndexQueryTerms(val, terms, `${prefix}${property}.`);
+        MessageStoreDynamo.buildIndexQueryTerms(val, terms, `${prefix}${property}.`);
       } else {
         terms.push(`${prefix}${property}|${val}`);
       }
@@ -202,7 +197,7 @@ export class MessageStoreLevel implements MessageStore {
   }
 }
 
-type MessageStoreLevelConfig = {
+type MessageStoreDynamoConfig = {
   injectDB?: any,
   blockstoreLocation?: string,
   indexLocation?: string,

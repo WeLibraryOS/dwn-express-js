@@ -8,7 +8,7 @@ import { addSchema } from './validation/validator';
 import { CollectionsInterface, PermissionsInterface, FeatureDetectionInterface } from './interfaces';
 import { DIDResolver } from './did/did-resolver';
 import { Message, MessageReply, Request, Response } from './core';
-import { MessageStoreLevel } from './store/message-store-level';
+import { MessageStoreDynamo } from './store/message-store-dynamo';
 import { WebDidResolver } from './did/web-did-resolver';
 import { IonDidResolver } from './did/ion-did-resolver';
 import { KeyDidResolver } from './did/key-did-resolver';
@@ -39,7 +39,7 @@ export class DWN {
   }
 
   static async create(config: Config): Promise<DWN> {
-    config.messageStore = config.messageStore || new MessageStoreLevel({injectDB: config.injectDB, indexObjects: config.indexObjects});
+    config.messageStore = config.messageStore || new MessageStoreDynamo({injectDB: config.injectDB, indexObjects: config.indexObjects});
     config.DIDMethodResolvers = config.DIDMethodResolvers || [];
     config.interfaces = config.interfaces || [];
 
