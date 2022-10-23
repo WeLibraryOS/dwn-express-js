@@ -19,6 +19,8 @@ import { base64url } from 'multiformats/bases/base64';
 import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
 import { create_table } from './dynamodb_helpers';
 
+import parse from 'json-templates';
+
 /**
  * A simple implementation of {@link MessageStore} that works in both the browser and server-side.
  * Leverages LevelDB under the hood.
@@ -27,6 +29,7 @@ export class MessageStoreDynamo implements MessageStore {
   config: MessageStoreDynamoConfig;
   db: BlockstoreDynamo;
   index: DynamoDBClient;
+  index_schema: object;
   /**
    * @param {MessageStoreDynamoConfig} config
    * @param {string} config.blockstoreLocation - must be a directory path (relative or absolute) where
@@ -43,7 +46,7 @@ export class MessageStoreDynamo implements MessageStore {
 
     
     // TODO use this schema to set up messages table in dynamo
-    const index_schema = {
+    this.index_schema = {
       descriptor: {
         method: 'PermissionsQuery',
         grantedTo: 'string',
@@ -54,6 +57,23 @@ export class MessageStoreDynamo implements MessageStore {
         }
       }
     }
+  }
+
+    flatten(obj, prefix: string = ''): Map<string, string> {
+
+      var propName = (prefix.length) ? prefix + '.' :  '',
+      ret = new Map<string, string>();
+
+      for(var attr in obj){
+          const key = propName + attr;
+          if (typeof obj[attr] === 'object'){
+              ret = new Map([...ret, ...this.flatten(obj[attr], key)]);
+          }
+          else{
+              ret.set(key, obj[attr]);
+          }
+      }
+      return ret;
   }
 
   async open(): Promise<void> {
@@ -69,7 +89,24 @@ export class MessageStoreDynamo implements MessageStore {
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
       this.index = new DynamoDBClient({});
-      create_table(this.index, 'messages');
+
+      const index_keys =  Object.keys(this.flatten(this.index_schema)).map((key) => {
+        return { 
+          AttributeName: key, 
+          KeyType: 'HASH' }
+      })
+
+      create_table(this.index, 'messages', index_keys.concat([
+        {
+          AttributeName: 'nonce',
+          KeyType: 'HASH'
+        }]), [
+        {
+          AttributeName: 'message',
+          AttributeType: 'S'
+        },
+        
+      ]);
     }
   }
 
@@ -136,6 +173,12 @@ export class MessageStoreDynamo implements MessageStore {
     return;
   }
 
+  dig (p: string[], o: object) {
+    p.reduce((xs, x) =>
+    (xs && xs[x]) ? xs[x] : null, o)
+  }
+
+
   async put(messageJson: BaseMessageSchema, ctx: Context): Promise<void> {
 
     let data: string | undefined = messageJson['data'];
@@ -155,7 +198,20 @@ export class MessageStoreDynamo implements MessageStore {
       for await (const _ of chunk);
     }
 
-    await this.index.put(encodedBlock.cid.toString(), messageJson);
+    const items = this.flatten(this.index_schema);
+
+    const item_template = parse({
+      "{{key}}": {
+        "S": "{{value}}"
+      }
+    })
+
+    Object.keys(items).forEach((key) => {
+      items[key] =  JSON.parse(item_template({value: this.dig(key.split('.'), messageJson), key}))
+    })
+
+    const put_command = new PutItemCommand({  TableName: 'messages', Item: items });
+    const put_result =  await this.index.send(put_command);
   }
 
   /**

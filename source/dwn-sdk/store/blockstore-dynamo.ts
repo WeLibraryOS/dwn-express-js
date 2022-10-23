@@ -27,7 +27,18 @@ export class BlockstoreDynamo implements Blockstore {
 
   async open(): Promise<void> {
     // set up tables if they don't exist
-    create_table(this.db, 'blocks');
+    create_table(this.db, 'blocks', [
+      {
+        AttributeName: 'cid',
+        KeyType: 'HASH'
+      }
+    ], [
+      {
+        AttributeName: 'cid',
+        AttributeType: 'S'
+      },
+      
+    ]);
   }
 
   /**
