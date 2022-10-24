@@ -32,12 +32,15 @@ export class BlockstoreDynamo implements Blockstore {
         AttributeName: 'cid',
         KeyType: 'HASH'
       }
-    ], [
+    ], null, [
       {
         AttributeName: 'cid',
         AttributeType: 'S'
       },
-      
+      {
+        AttributeName: 'data',
+        AttributeType: 'S'
+      },
     ]);
   }
 

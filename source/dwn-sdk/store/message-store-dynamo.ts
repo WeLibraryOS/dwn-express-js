@@ -14,12 +14,35 @@ import * as block from 'multiformats/block';
 
 import _ from 'lodash';
 import { exporter } from 'ipfs-unixfs-exporter';
-import { base64url } from 'multiformats/bases/base64';
+import { base64, base64url } from 'multiformats/bases/base64';
 
-import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand, QueryCommand, QueryCommandInput } from "@aws-sdk/client-dynamodb";
 import { create_table } from './dynamodb_helpers';
 
-import parse from 'json-templates';
+// TODO: move these into a utils file
+const dig = (p, o) =>
+  p.reduce((xs, x) => 
+    (xs && xs[x]) ? xs[x] : null
+  , o)
+
+const flatten = (obj, prefix: string = ''): Map<string, string> => {
+
+    var propName = (prefix.length) ? prefix + '.' :  '',
+    ret = new Map<string, string>();
+
+    for(var attr in obj){
+        const key = propName + attr;
+        if (typeof obj[attr] === 'object'){
+            ret = new Map([...ret, ...flatten(obj[attr], key)]);
+        }
+        else{
+            ret.set(key, obj[attr]);
+        }
+    }
+    return ret;
+  }
+
+  const dynamoKey = (key: string): string => key.replace(/\./g, '_').replace('descriptor', 'descript0r');
 
 /**
  * A simple implementation of {@link MessageStore} that works in both the browser and server-side.
@@ -45,35 +68,20 @@ export class MessageStoreDynamo implements MessageStore {
     };
 
     
-    // TODO use this schema to set up messages table in dynamo
     this.index_schema = {
       descriptor: {
-        method: 'PermissionsQuery',
+        method: 'string',
         grantedTo: 'string',
         grantedBy: 'string',
-        dataFormat: 'string',
+        // dataFormat: 'string', // don't need this here as we are using desctiptor.dataFormat as the hash key
         scope: {
-          method: 'CollectionsWrite'
-        }
+          method: 'string'
+        },
+        recordId: 'string',
+        dataCid: 'string',
+        nonce: 'string'
       }
     }
-  }
-
-    flatten(obj, prefix: string = ''): Map<string, string> {
-
-      var propName = (prefix.length) ? prefix + '.' :  '',
-      ret = new Map<string, string>();
-
-      for(var attr in obj){
-          const key = propName + attr;
-          if (typeof obj[attr] === 'object'){
-              ret = new Map([...ret, ...this.flatten(obj[attr], key)]);
-          }
-          else{
-              ret.set(key, obj[attr]);
-          }
-      }
-      return ret;
   }
 
   async open(): Promise<void> {
@@ -90,22 +98,27 @@ export class MessageStoreDynamo implements MessageStore {
     if (!this.index) {
       this.index = new DynamoDBClient({});
 
-      const index_keys =  Object.keys(this.flatten(this.index_schema)).map((key) => {
-        return { 
+      /*
+      const items = flatten(this.index_schema);
+      const index_attributes =  Array.from(items.keys()).map((key) => 
+        ( { 
           AttributeName: key, 
-          KeyType: 'HASH' }
-      })
+          AttributeType: 'S' 
+        })
+      )
+      */
 
-      create_table(this.index, 'messages', index_keys.concat([
+      create_table(this.index, 'messages', [
         {
-          AttributeName: 'nonce',
+          // TODO: don't really need a good key here because we don't have enough data, also descriptor.dataFormat is a magic value we should put it into a constant
+          AttributeName: dynamoKey('descriptor.dataFormat'),
           KeyType: 'HASH'
-        }]), [
+        }],
+        null, [
         {
-          AttributeName: 'message',
+          AttributeName: dynamoKey('descriptor.dataFormat'),
           AttributeType: 'S'
-        },
-        
+        }
       ]);
     }
   }
@@ -147,16 +160,37 @@ export class MessageStoreDynamo implements MessageStore {
     return messageJson as BaseMessageSchema;
   }
 
-  async query(query: any, ctx: Context): Promise<BaseMessageSchema[]> {
+  async query(query: object, ctx: Context): Promise<BaseMessageSchema[]> {
 
     const messages: BaseMessageSchema[] = [];
 
-    // TODO: query dynamodb here
+    const query_terms = flatten(query);
 
-    const indexResults = this.index.query(query);
+    const query_keys = Array.from(query_terms.keys()).filter(item => item != 'descriptor.dataFormat')
 
-    for (const result of indexResults) {
-      const cid = CID.parse(result);
+    const query_command_input: QueryCommandInput = {
+      TableName: 'messages',
+      KeyConditionExpression: 'descript0r_dataFormat = :data_format',
+      FilterExpression: query_keys.map((key) =>
+        `${dynamoKey(key)} = :${dynamoKey(key)}`
+      ).join(' AND '),
+      ExpressionAttributeValues: query_keys.reduce((acc, key) => {
+        acc[`:${dynamoKey(key)}`] = { S: query_terms.get(key) };
+        return acc;
+      }, {
+        ":data_format": {
+          S: query_terms.get('descriptor.dataFormat') || 'none'
+         }
+       })
+    }
+  
+
+    const query_command = new QueryCommand(query_command_input);
+
+    const index_results =  await this.index.send(query_command);
+
+    for (const result of index_results.Items) {
+      const cid = CID.parse(result.descript0r_dataCid.S, base64.decoder);
       const message = await this.get(cid, ctx);
 
       messages.push(message);
@@ -171,11 +205,6 @@ export class MessageStoreDynamo implements MessageStore {
     await this.index.delete(cid.toString());
 
     return;
-  }
-
-  dig (p: string[], o: object) {
-    p.reduce((xs, x) =>
-    (xs && xs[x]) ? xs[x] : null, o)
   }
 
 
@@ -198,20 +227,21 @@ export class MessageStoreDynamo implements MessageStore {
       for await (const _ of chunk);
     }
 
-    const items = this.flatten(this.index_schema);
+    const items = flatten(this.index_schema);
 
-    const item_template = parse({
-      "{{key}}": {
-        "S": "{{value}}"
+    items[dynamoKey('descriptor.dataFormat')] = {S: messageJson['descriptor.dataFormat'] || 'none'};
+    items['message'] = { S: JSON.stringify(messageJson)}
+
+    Array.from(items.keys()).forEach((key) => {
+      const value = dig(key.split('.'), messageJson);
+      if (value) {
+        items[dynamoKey(key)] =  {S: value};
       }
-    })
-
-    Object.keys(items).forEach((key) => {
-      items[key] =  JSON.parse(item_template({value: this.dig(key.split('.'), messageJson), key}))
     })
 
     const put_command = new PutItemCommand({  TableName: 'messages', Item: items });
     const put_result =  await this.index.send(put_command);
+    console.log(put_result);
   }
 
   /**
@@ -220,36 +250,6 @@ export class MessageStoreDynamo implements MessageStore {
   async clear(): Promise<void> {
     await this.db.clear();
     await this.index.clear();
-  }
-
-  /**
-   * recursively parses a query object into a list of flattened terms that can be used to query the search
-   * index
-   * @example
-   * buildIndexQueryTerms({
-   *    ability : {
-   *      method : 'CollectionsQuery',
-   *      schema : 'https://schema.org/MusicPlaylist'
-   *    }
-   * })
-   * // returns ['ability.method:CollectionsQuery', 'ability.schema:https://schema.org/MusicPlaylist' ]
-   * @param query - the query to parse
-   * @param terms - internally used to collect terms
-   * @param prefix - internally used to pass parent properties into recursive calls
-   * @returns the list of terms
-   */
-  private static buildIndexQueryTerms(query: any, terms: string[] = [], prefix: string = ''): string[] {
-    for (const property in query) {
-      const val = query[property];
-
-      if (_.isPlainObject(val)) {
-        MessageStoreDynamo.buildIndexQueryTerms(val, terms, `${prefix}${property}.`);
-      } else {
-        terms.push(`${prefix}${property}|${val}`);
-      }
-    }
-
-    return terms;
   }
 }
 

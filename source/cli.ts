@@ -52,7 +52,7 @@ async function doStuff() {
 }
 
 async function postOneRequest(request: RequestSchema, request_name?: string) {
-  await fetch(DWN_HOST, { 
+  return fetch(DWN_HOST, { 
     method: 'POST',
     body: JSON.stringify(request),
     headers: {

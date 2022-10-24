@@ -49,15 +49,9 @@ export const handleCollectionsWrite: MethodHandler = async (
     }
   }
 
-  try {
     await messageStore.put(message, {author: context.tenant, tenant: context.tenant});
 
     return new MessageReply({
       status: { code: 202, message: 'Accepted' }
     });
-  } catch (e) {
-    return new MessageReply({
-      status: { code: 500, message: e.message }
-    });
-  }
 };

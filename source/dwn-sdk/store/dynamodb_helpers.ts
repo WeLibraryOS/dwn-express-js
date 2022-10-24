@@ -1,15 +1,15 @@
 import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand, KeySchemaElement, AttributeDefinition } from "@aws-sdk/client-dynamodb";
 
-export function create_table(db: DynamoDBClient, name: string, key_schema: KeySchemaElement[], attribute_definitions: AttributeDefinition[]) {
+export function create_table(db: DynamoDBClient, name: string, primary_keys: KeySchemaElement[], secondary_keys: KeySchemaElement[] | undefined, attribute_definitions: AttributeDefinition[]) {
     const listTablesCommand = new ListTablesCommand({});
     db.send(listTablesCommand).then(async (data) => {
       if (data.TableNames!.includes(name)) {
-        console.log('blocks table already exists');
+        console.log(`${name} table already exists`);
       } else {
-        console.log('creating blocks table');
+        console.log(`creating ${name} table`);
         const params: CreateTableCommandInput = {
           TableName: name,
-          KeySchema: key_schema,
+          KeySchema: primary_keys,
           AttributeDefinitions: attribute_definitions,
           ProvisionedThroughput: {
             ReadCapacityUnits: 5,
