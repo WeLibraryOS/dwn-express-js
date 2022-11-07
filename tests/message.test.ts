@@ -45,7 +45,7 @@ describe("test message handling", () => {
 
   test("object storage and query", async () => {
 
-    const messageBody = makeWriteVCMessageBody()
+    const messageBody = makeWriteVCMessageBody(keyPair, testDid);
     
     var res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
