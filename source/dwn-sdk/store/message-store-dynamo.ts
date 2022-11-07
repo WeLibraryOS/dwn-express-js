@@ -190,7 +190,7 @@ export class MessageStoreDynamo implements MessageStore {
     const index_results =  await this.index.send(query_command);
 
     for (const result of index_results.Items) {
-      const cid = CID.parse(result.descript0r_dataCid.S, base64.decoder);
+      const cid = CID.parse(result.descript0r_dataCid.S);
       const message = await this.get(cid, ctx);
 
       messages.push(message);
