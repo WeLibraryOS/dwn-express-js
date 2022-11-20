@@ -2,6 +2,9 @@ import { GeneralJwsVerifier } from '../jose/jws/general';
 import { PublicJwk } from '../jose/types';
 import { DIDMethodResolver, DIDResolutionResult } from './did-resolver';
 
+import KeyDIDResolver from 'key-did-resolver'
+import {Resolver} from 'did-resolver'
+
 /**
  * Resolver for KEY DIDs.
  */
@@ -12,19 +15,12 @@ export class KeyDidResolver implements DIDMethodResolver {
   }
 
   async resolve(did: string): Promise<DIDResolutionResult> {
-    const didParts = did.split(':');
+    const resolver = new Resolver(KeyDIDResolver.getResolver())
+    const doc = await resolver.resolve(did)
     return {
       '@context': 'https://w3id.org/did-resolution/v1',
       didResolutionMetadata : {},
-      didDocument           : {
-          id: did,    // TODO: not sure what to use here for the id
-              verificationMethod: [{
-                  controller: did,    // TODO: it is not correct to use the same did as the controller
-                  id           : `${did}#key1`,
-                  type         : 'JsonWebKey2020',
-                  publicKeyJwk : GeneralJwsVerifier.makeObjectFromBase64UrlString<PublicJwk>(didParts[2])
-              }]
-      },
+      didDocument           : doc.didDocument,
       didDocumentMetadata: {}
     };
   }

@@ -108,6 +108,7 @@ export type VerificationMethod = {
   // a string representation of
   // https://datatracker.ietf.org/doc/html/draft-multiformats-multibase-05
   publicKeyMultibase?: string
+  publicKeyBase58?: string
 };
 
 export type DIDResolutionResult = {
