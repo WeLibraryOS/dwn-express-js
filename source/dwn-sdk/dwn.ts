@@ -9,6 +9,8 @@ import { CollectionsInterface, PermissionsInterface, FeatureDetectionInterface }
 import { DIDResolver } from './did/did-resolver';
 import { Message, MessageReply, Request, Response } from './core';
 import { MessageStoreDynamo } from './store/message-store-dynamo';
+
+// TODO: replace all these with did-resolver and key-did-resolver packages
 import { WebDidResolver } from './did/web-did-resolver';
 import { IonDidResolver } from './did/ion-did-resolver';
 import { KeyDidResolver } from './did/key-did-resolver';
