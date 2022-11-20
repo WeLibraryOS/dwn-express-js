@@ -3,10 +3,12 @@ import type { Jwk, PublicJwk } from '../../types';
 import type { VerificationMethod } from '../../../did/did-resolver';
 
 import { base64url } from 'multiformats/bases/base64';
+import { base58btc } from 'multiformats/bases/base58';
 import { DIDResolver } from '../../../did/did-resolver';
 import { signers as verifiers } from '../../algorithms';
 
 import { TextEncoder, TextDecoder } from "util";
+
 
 type VerificationResult = {
   /** DIDs of all signers */
@@ -64,6 +66,12 @@ export class GeneralJwsVerifier {
         verificationMethod = vm;
         break;
       }
+
+      // TODO: which one of these methods for finding the verification method is better?
+      if (vm.controller === kid) {
+        verificationMethod = vm;
+        break;
+      }
     }
 
 
@@ -74,20 +82,26 @@ export class GeneralJwsVerifier {
     // TODO: replace with JSON Schema based validation, Issue 67 https://github.com/TBD54566975/dwn-sdk-js/issues/67
     // more info about the `JsonWebKey2020` type can be found here:
     // https://www.w3.org/TR/did-spec-registries/#jsonwebkey2020
-    if (verificationMethod.type !== 'JsonWebKey2020') {
-      throw new Error(`verification method [${kid}] must be JsonWebKey2020`);
+    if (verificationMethod.type == 'JsonWebKey2020') {
+      const { publicKeyJwk: publicJwk } = verificationMethod;
+
+      // TODO: replace with JSON Schema based validation, Issue 68 https://github.com/TBD54566975/dwn-sdk-js/issues/68
+      // more info about the `publicJwk` property can be found here:
+      // https://www.w3.org/TR/did-spec-registries/#publicJwk
+      if (!publicJwk) {
+        throw new Error(`publicKeyJwk property not found on verification method [${kid}]`);
+      }
+  
+      return publicJwk as PublicJwk;
+    }
+    if (verificationMethod.type == 'Ed25519VerificationKey2018') {
+      const decoded = base58btc.decode('z' + verificationMethod.publicKeyBase58)
+      const recoded = base64url.baseEncode(decoded);
+      return { "kty":"OKP", "crv":"Ed25519", "x": recoded };
     }
 
-    const { publicKeyJwk: publicJwk } = verificationMethod;
 
-    // TODO: replace with JSON Schema based validation, Issue 68 https://github.com/TBD54566975/dwn-sdk-js/issues/68
-    // more info about the `publicJwk` property can be found here:
-    // https://www.w3.org/TR/did-spec-registries/#publicJwk
-    if (!publicJwk) {
-      throw new Error(`publicKeyJwk property not found on verification method [${kid}]`);
-    }
-
-    return publicJwk as PublicJwk;
+    throw new Error(`verification method [${kid}] must be JsonWebKey2020 or Ed25519VerificationKey2018`);
   }
 
   static async verifySignature(base64UrlPayload: string, signature: Signature, jwkPublic: PublicJwk): Promise<boolean> {
