@@ -41,7 +41,7 @@ export class DWN {
   }
 
   static async create(config: Config): Promise<DWN> {
-    config.messageStore = config.messageStore || new MessageStoreDynamo({injectDB: config.injectDB, indexObjects: config.indexObjects});
+    config.messageStore = config.messageStore || new MessageStoreDynamo({useBlockStore: false, injectDB: config.injectDB, indexObjects: config.indexObjects});
     config.DIDMethodResolvers = config.DIDMethodResolvers || [];
     config.interfaces = config.interfaces || [];
 

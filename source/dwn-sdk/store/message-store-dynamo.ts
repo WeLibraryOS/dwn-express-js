@@ -20,10 +20,13 @@ import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTables
 import { create_table } from './dynamodb_helpers';
 
 // TODO: move these into a utils file
-const dig = (p, o) =>
-  p.reduce((xs, x) => 
+const dig = (p, o) => {
+  if (typeof(p) == 'string')
+    p = p.split('.')
+  return p.reduce((xs, x) => 
     (xs && xs[x]) ? xs[x] : null
   , o)
+}
 
 const flatten = (obj, prefix: string = ''): Map<string, string> => {
 
@@ -60,7 +63,7 @@ export class MessageStoreDynamo implements MessageStore {
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase IDBDatabase} to be opened.
    * @param {string} config.indexLocation - same as config.blockstoreLocation
    */
-  constructor(config: MessageStoreDynamoConfig = {}) {
+  constructor(config: MessageStoreDynamoConfig) {
     this.config = {
       blockstoreLocation : 'BLOCKSTORE',
       indexLocation      : 'INDEX',
@@ -85,11 +88,13 @@ export class MessageStoreDynamo implements MessageStore {
   }
 
   async open(): Promise<void> {
-    if (!this.db) {
-      this.db = new BlockstoreDynamo(this.config.blockstoreLocation!, this.config.injectDB);
+    if (this.config.useBlockStore) {
+      if (!this.db) {
+        this.db = new BlockstoreDynamo(this.config.blockstoreLocation!, this.config.injectDB);
+      }
+      await this.db.open();
     }
 
-    await this.db.open();
 
     // TODO: look into using the same level we're using for blockstore, Issue #49 https://github.com/TBD54566975/dwn-sdk-js/issues/49
     // TODO: parameterize `name`, Issue #50 https://github.com/TBD54566975/dwn-sdk-js/issues/50
@@ -124,10 +129,11 @@ export class MessageStoreDynamo implements MessageStore {
   }
 
   async close(): Promise<void> {
-    await this.db.close();
+    if (this.db)
+      await this.db.close();
   }
 
-  async get(cid: CID, ctx: Context): Promise<BaseMessageSchema> {
+  async getBlock(cid: CID, ctx: Context): Promise<BaseMessageSchema> {
     const bytes = await this.db.get(cid, ctx);
 
     if (!bytes) {
@@ -160,6 +166,10 @@ export class MessageStoreDynamo implements MessageStore {
     return messageJson as BaseMessageSchema;
   }
 
+  async get(cid: CID, ctx: Context): Promise<BaseMessageSchema> {
+    this.index.get()
+  }
+
   async query(query: object, ctx: Context): Promise<BaseMessageSchema[]> {
 
     const messages: BaseMessageSchema[] = [];
@@ -184,16 +194,17 @@ export class MessageStoreDynamo implements MessageStore {
        })
     }
   
-
     const query_command = new QueryCommand(query_command_input);
 
     const index_results =  await this.index.send(query_command);
 
     for (const result of index_results.Items) {
-      const cid = CID.parse(result.descript0r_dataCid.S);
-      const message = await this.get(cid, ctx);
+      
+      // TODO: fetch data from blockstore if needed
+      // const cid = CID.parse(result.descript0r_dataCid.S);
+      // const message = await this.get(cid, ctx);
 
-      messages.push(message);
+      messages.push(JSON.parse(result.message.S));
     }
 
     return messages;
@@ -207,9 +218,7 @@ export class MessageStoreDynamo implements MessageStore {
     return;
   }
 
-
-  async put(messageJson: BaseMessageSchema, ctx: Context): Promise<void> {
-
+  async putBlock(messageJson: BaseMessageSchema, ctx: Context): Promise<void> {
     let data: string | undefined = messageJson['data'];
 
     const encodedBlock = await block.encode({ value: _.omit(messageJson, 'data'), codec: cbor, hasher: sha256 });
@@ -226,10 +235,14 @@ export class MessageStoreDynamo implements MessageStore {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for await (const _ of chunk);
     }
+  }
+
+
+  async put(messageJson: BaseMessageSchema, ctx: Context): Promise<void> {
 
     const items = flatten(this.index_schema);
 
-    items[dynamoKey('descriptor.dataFormat')] = {S: messageJson['descriptor.dataFormat'] || 'none'};
+    items[dynamoKey('descriptor.dataFormat')] = {S: dig('descriptor.dataFormat', messageJson) || 'none'};
     items['message'] = { S: JSON.stringify(messageJson)}
 
     Array.from(items.keys()).forEach((key) => {
@@ -254,6 +267,7 @@ export class MessageStoreDynamo implements MessageStore {
 }
 
 type MessageStoreDynamoConfig = {
+  useBlockStore: boolean;
   injectDB?: any,
   blockstoreLocation?: string,
   indexLocation?: string,
