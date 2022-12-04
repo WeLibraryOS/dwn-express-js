@@ -39,7 +39,7 @@ export class PermissionsGrant extends Message implements Authorizable {
       grantedTo   : options.grantedTo,
       grantedBy   : options.grantedBy,
       method      : 'PermissionsGrant',
-      objectId    : options.objectId ? options.objectId : uuidv4(),
+      permissionsRequestId    : options.permissionsRequestId ? options.permissionsRequestId : uuidv4(),
       scope       : options.scope,
     };
 

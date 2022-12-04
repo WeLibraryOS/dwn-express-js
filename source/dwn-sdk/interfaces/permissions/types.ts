@@ -37,7 +37,7 @@ export type PermissionsRequestDescriptor = {
   grantedTo: string
   grantedBy: string
   method: 'PermissionsRequest'
-  objectId?: string
+  permissionRequestId?: string
   scope: PermissionScope
 };
 
@@ -52,7 +52,6 @@ export type PermissionsGrantDescriptor = {
   grantedTo: string;
   grantedBy: string;
   method: 'PermissionsGrant';
-  objectId: string;
   permissionsRequestId?: string;
   scope: PermissionScope;
 };

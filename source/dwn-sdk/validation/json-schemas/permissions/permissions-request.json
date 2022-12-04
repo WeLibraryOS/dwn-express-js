@@ -34,7 +34,7 @@
         "scope": {
           "$ref": "https://identity.foundation/dwn/json-schemas/permissions/defs.json#/definitions/scope"
         },
-        "objectId": {
+        "permissionRequestId": {
           "$ref": "https://identity.foundation/dwn/json-schemas/defs.json#/definitions/uuid"
         }
       }

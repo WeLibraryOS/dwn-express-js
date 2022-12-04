@@ -12,7 +12,7 @@ type PermissionsRequestOptions = AuthCreateOptions & {
   description: string;
   grantedTo: string;
   grantedBy: string;
-  objectId?: string;
+  permissionRequestId?: string;
   scope: PermissionScope;
 };
 
@@ -34,7 +34,7 @@ export class PermissionsRequest extends Message implements Authorizable {
       grantedTo   : opts.grantedTo,
       grantedBy   : opts.grantedBy,
       method      : 'PermissionsRequest',
-      objectId    : opts.objectId ? opts.objectId : uuidv4(),
+      permissionRequestId    : opts.permissionRequestId ? opts.permissionRequestId : uuidv4(),
       scope       : opts.scope,
     };
 
@@ -49,7 +49,7 @@ export class PermissionsRequest extends Message implements Authorizable {
   }
 
   get id(): string {
-    return this.message.descriptor.objectId!;
+    return this.message.descriptor.permissionRequestId!;
   }
 
   get conditions(): PermissionConditions {

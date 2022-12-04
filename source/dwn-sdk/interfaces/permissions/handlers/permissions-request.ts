@@ -3,6 +3,7 @@ import type { PermissionsRequestSchema } from '../types';
 
 import { MessageReply } from '../../../core';
 import { PermissionsRequest } from '../messages/permissions-request';
+import { grantPermissionsRequest } from '../../../core/permission';
 
 export const handlePermissionsRequest: MethodHandler = async (
   ctx,
@@ -28,6 +29,8 @@ export const handlePermissionsRequest: MethodHandler = async (
 
   try {
     await messageStore.put(message, ctx);
+
+    await grantPermissionsRequest(ctx, request, messageStore, didResolver);
 
     return new MessageReply({
       status: { code: 202, message: 'Accepted' }
