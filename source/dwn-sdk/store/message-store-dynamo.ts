@@ -73,10 +73,10 @@ export class MessageStoreDynamo implements MessageStore {
     
     this.index_schema = {
       descriptor: {
-        method: 'string',
+        // method: 'string', // don't need this here as we are using desctiptor.method as the hash key
         grantedTo: 'string',
         grantedBy: 'string',
-        // dataFormat: 'string', // don't need this here as we are using desctiptor.dataFormat as the hash key
+        dataFormat: 'string', 
         scope: {
           method: 'string'
         },
@@ -115,13 +115,13 @@ export class MessageStoreDynamo implements MessageStore {
 
       create_table(this.index, 'messages', [
         {
-          // TODO: don't really need a good key here because we don't have enough data, also descriptor.dataFormat is a magic value we should put it into a constant
-          AttributeName: dynamoKey('descriptor.dataFormat'),
+          // TODO: don't really need a good key here because we don't have enough data, also descriptor.method is a magic value we should put it into a constant
+          AttributeName: dynamoKey('descriptor.method'),
           KeyType: 'HASH'
         }],
         null, [
         {
-          AttributeName: dynamoKey('descriptor.dataFormat'),
+          AttributeName: dynamoKey('descriptor.method'),
           AttributeType: 'S'
         }
       ]);
@@ -176,7 +176,7 @@ export class MessageStoreDynamo implements MessageStore {
 
     const query_terms = flatten(query);
 
-    const query_keys = Array.from(query_terms.keys()).filter(item => item != 'descriptor.dataFormat')
+    const query_keys = Array.from(query_terms.keys()).filter(item => item != 'descriptor.method')
 
     const query_command_input: QueryCommandInput = {
       TableName: 'messages',
@@ -189,7 +189,7 @@ export class MessageStoreDynamo implements MessageStore {
         return acc;
       }, {
         ":data_format": {
-          S: query_terms.get('descriptor.dataFormat') || 'none'
+          S: query_terms.get('descriptor.method')
          }
        })
     }
@@ -242,7 +242,7 @@ export class MessageStoreDynamo implements MessageStore {
 
     const items = flatten(this.index_schema);
 
-    items[dynamoKey('descriptor.dataFormat')] = {S: dig('descriptor.dataFormat', messageJson) || 'none'};
+    items[dynamoKey('descriptor.method')] = {S: dig('descriptor.method', messageJson)};
     items['message'] = { S: JSON.stringify(messageJson)}
 
     Array.from(items.keys()).forEach((key) => {
