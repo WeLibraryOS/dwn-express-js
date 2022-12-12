@@ -4,9 +4,6 @@ import { DIDResolver } from '../../../did/did-resolver';
 import { makeProcessing, makeRecordId, Message } from '../../../core/message';
 import { removeUndefinedProperties } from '../../../utils/object';
 import { sign, verifyAuth } from '../../../core/auth';
-import { randomUUID } from 'crypto';
-import { makeDataCID } from '../../../../../tests/helpers';
-import { getDagCid } from '../../../utils/data';
 
 type CollectionsQueryOptions = AuthCreateOptions & ProcessingOptions & {
   filter: {
@@ -36,7 +33,7 @@ export class CollectionsQuery extends Message implements Authorizable {
     // Error: `undefined` is not supported by the IPLD Data Model and cannot be encoded
     removeUndefinedProperties(descriptor);
 
-    const processing = await makeProcessing({tenant: options.tenant, owner: options.owner});
+    const processing = await makeProcessing({tenant: options.processing.author, owner: options.processing.recipient});
 
     const recordId = await makeRecordId(descriptor, processing);  // TODO: must compute this recordId
 

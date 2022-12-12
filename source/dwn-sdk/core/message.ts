@@ -58,13 +58,13 @@ export async function makeRecordId(descriptor: BaseDescriptorSchema, processing:
 export function makeProcessing(context: Context): BaseProcessingSchema {
   return {
     nonce: randomUUID(),
-    author: context.owner,
-    recipient: context.tenant,
+    recipient: context.owner,
+    author: context.tenant,
   }
 }
 
-export async function makeFinalMessage<T extends BaseDescriptorSchema, V extends AuthMessageSchema>(descriptor: T, options: AuthCreateOptions & ProcessingOptions): Promise<V> {
-  const processing = makeProcessing(options);
+export async function makeFinalMessage<T extends BaseDescriptorSchema, V extends AuthMessageSchema>(descriptor: T, options: AuthCreateOptions & ProcessingOptions): Promise<Pick<V, 'descriptor' | 'processing' | 'recordId' | 'authorization'>> {
+  const processing = makeProcessing({owner: options.processing.recipient, tenant: options.processing.author});
   const recordId = await makeRecordId(descriptor, processing);
   const authorization = await sign(descriptor , options.signatureInput);
 

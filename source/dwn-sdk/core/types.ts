@@ -86,8 +86,10 @@ export type AuthCreateOptions = {
 };
 
 export type ProcessingOptions = {
-  tenant: string, 
-  owner: string
+  processing: {
+  recipient: DID, 
+  author: DID
+  }
 }
 
 export type RequestSchema = {

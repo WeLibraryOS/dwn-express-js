@@ -68,7 +68,11 @@ export class PermissionsGrant extends Message implements Authorizable {
       grantedTo            : permissionsRequest.grantedTo,
       permissionsRequestId : permissionsRequest.id,
       scope                : permissionsRequest.scope,
-      signatureInput       : signatureInput
+      signatureInput       : signatureInput,
+      processing: {
+      author               : permissionsRequest.tenant,
+      recipient            : permissionsRequest.owner
+      }
     });
   }
 
@@ -91,7 +95,11 @@ export class PermissionsGrant extends Message implements Authorizable {
       grantedBy      : this.grantedTo,
       grantedTo      : to,
       scope          : this.scope,
-      signatureInput : signatureInput
+      signatureInput : signatureInput,
+      processing: {
+        author     : this.grantedTo,
+        recipient  : to
+      }
     });
 
     delegatedGrant.delegatedFrom = await generateCid(this.message);

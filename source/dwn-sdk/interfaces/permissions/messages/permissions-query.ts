@@ -19,7 +19,7 @@ export class PermissionsQuery extends Message implements Authorizable {
 
     const descriptor: PermissionsQueryDescriptor = opts;
 
-    const processing = makeProcessing(opts)
+    const processing = makeProcessing({owner: opts.processing.recipient, tenant: opts.processing.author})
 
     const recordId = await makeRecordId(descriptor, processing)
 

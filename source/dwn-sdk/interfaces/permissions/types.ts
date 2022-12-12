@@ -1,4 +1,4 @@
-import type { Authorization, BaseMessageSchema } from '../../core/types';
+import type { Authorization, BaseMessageSchema, ProcessingOptions } from '../../core/types';
 
 export type PermissionScope = {
   method: string
@@ -41,7 +41,7 @@ export type PermissionsRequestDescriptor = {
   scope: PermissionScope
 };
 
-export type PermissionsRequestSchema = BaseMessageSchema & Authorization & {
+export type PermissionsRequestSchema = BaseMessageSchema & Authorization & ProcessingOptions & {
   descriptor: PermissionsRequestDescriptor;
 };
 
