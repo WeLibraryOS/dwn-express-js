@@ -4,8 +4,6 @@ export type CollectionsWriteDescriptor = {
   method: 'CollectionsWrite';
   protocol?: string;
   schema?: string;
-  nonce: string;
-  recordId: string;
   dataCid: string;
   dateCreated: number;
   published?: boolean;
@@ -19,12 +17,12 @@ export type CollectionsWriteSchema = BaseMessageSchema & Authorization & {
 
 export type CollectionsQueryDescriptor = {
   method: 'CollectionsQuery';
-  nonce: string;
   filter: {
     protocol?: string;
     schema?: string;
     recordId?: string;
     dataFormat?: string;
+    data?: Record<string, unknown>;
   }
   dateSort?: string;
 };

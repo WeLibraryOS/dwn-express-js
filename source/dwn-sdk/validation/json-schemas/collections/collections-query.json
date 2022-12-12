@@ -16,7 +16,6 @@
       "additionalProperties": false,
       "required": [
         "method",
-        "nonce",
         "filter"
       ],
       "properties": {
@@ -24,9 +23,6 @@
           "enum": [
             "CollectionsQuery"
           ],
-          "type": "string"
-        },
-        "nonce": {
           "type": "string"
         },
         "filter": {
@@ -40,9 +36,7 @@
             "schema": {
               "type": "string"
             },
-            "recordId": {
-              "$ref": "https://identity.foundation/dwn/json-schemas/defs.json#/definitions/uuid"
-            },
+          
             "dataFormat": {
               "type": "string"
             }

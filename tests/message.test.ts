@@ -1,6 +1,6 @@
 import { DWN } from "../source/dwn-sdk";
 import createDWN from "../source/dwn-sdk-wrapper";
-import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, makeWriteVCMessageBody, TestMethodResolver } from "./helpers";
+import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, makeWriteVCMessageBody, SCHEMA_URL, TestMethodResolver } from "./helpers";
 
 describe("test message handling", () => {
 
@@ -15,7 +15,6 @@ describe("test message handling", () => {
     keyPair = await makeKeyPair();
     testResolver.addKey(testDid, keyPair.publicJwk);
     dwn = await createDWN({
-      injectDB: new LevelMemory(),
       DIDMethodResolvers: [testResolver],
       owner: testDid,
       indexObjects: [{
@@ -52,7 +51,6 @@ describe("test message handling", () => {
     await expect(res.replies![0].status.code).toBe(202);
 
     const query_descriptor = {
-      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
       "method": "CollectionsQuery",
       "filter": {
         data: {

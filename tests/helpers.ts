@@ -128,7 +128,6 @@ export class TestMethodResolver implements DIDMethodResolver {
       "messages": [
         {
             "descriptor": {
-                "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
                 "method": "FeatureDetectionRead"
             }
         }
@@ -162,10 +161,8 @@ export class TestMethodResolver implements DIDMethodResolver {
     const dataCid = await makeDataCID(JSON.stringify(data));
 
     const descriptor = {
-      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
       "method": "CollectionsWrite",
       "schema": SCHEMA_URL,
-      "recordId": "b6464162-84af-4aab-aff5-f1f8438dfc1e",
       "dataCid": Buffer.from(dataCid.cid.bytes).toString('base64'),
       "dateCreated": 123456789,
       "dataFormat": "application/json"

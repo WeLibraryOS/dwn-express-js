@@ -1,12 +1,12 @@
-import type { AuthCreateOptions, Authorizable, AuthVerificationResult } from '../../../core/types';
+import type { AuthCreateOptions, Authorizable, AuthVerificationResult, ProcessingOptions } from '../../../core/types';
 import type { PermissionsQuerySchema, PermissionsQueryDescriptor } from '../types';
 import type { PermissionScope } from '../types';
 
 import { DIDResolver } from '../../../did/did-resolver';
-import { Message } from '../../../core/message';
+import { makeProcessing, makeRecordId, Message } from '../../../core/message';
 import { sign, verifyAuth } from '../../../core/auth';
 
-type PermissionsQueryOptions = AuthCreateOptions & PermissionsQueryDescriptor
+type PermissionsQueryOptions = AuthCreateOptions & PermissionsQueryDescriptor & ProcessingOptions;
 
 export class PermissionsQuery extends Message implements Authorizable {
   protected message: PermissionsQuerySchema;
@@ -19,8 +19,12 @@ export class PermissionsQuery extends Message implements Authorizable {
 
     const descriptor: PermissionsQueryDescriptor = opts;
 
-    const auth = await sign({ descriptor }, opts.signatureInput);
-    const message: PermissionsQuerySchema = { descriptor, authorization: auth };
+    const processing = makeProcessing(opts)
+
+    const recordId = await makeRecordId(descriptor, processing)
+
+    const authorization = await sign(descriptor, opts.signatureInput);
+    const message: PermissionsQuerySchema = { descriptor, authorization, processing, recordId };
 
     return new PermissionsQuery(message);
   }

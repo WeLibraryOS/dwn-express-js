@@ -1,12 +1,14 @@
-import type { AuthCreateOptions, Authorizable, AuthVerificationResult } from '../../../core/types';
+import type { AuthCreateOptions, Authorizable, AuthVerificationResult, ProcessingOptions } from '../../../core/types';
 import type { CollectionsQueryDescriptor, CollectionsQuerySchema } from '../types';
 import { DIDResolver } from '../../../did/did-resolver';
-import { Message } from '../../../core/message';
+import { makeProcessing, makeRecordId, Message } from '../../../core/message';
 import { removeUndefinedProperties } from '../../../utils/object';
 import { sign, verifyAuth } from '../../../core/auth';
+import { randomUUID } from 'crypto';
+import { makeDataCID } from '../../../../../tests/helpers';
+import { getDagCid } from '../../../utils/data';
 
-type CollectionsQueryOptions = AuthCreateOptions & {
-  nonce: string;
+type CollectionsQueryOptions = AuthCreateOptions & ProcessingOptions & {
   filter: {
     protocol?: string;
     schema?: string;
@@ -26,7 +28,6 @@ export class CollectionsQuery extends Message implements Authorizable {
   static async create(options: CollectionsQueryOptions): Promise<CollectionsQuery> {
     const descriptor: CollectionsQueryDescriptor = {
       method   : 'CollectionsQuery',
-      nonce    : options.nonce,
       filter   : options.filter,
       dateSort : options.dateSort
     };
@@ -35,8 +36,12 @@ export class CollectionsQuery extends Message implements Authorizable {
     // Error: `undefined` is not supported by the IPLD Data Model and cannot be encoded
     removeUndefinedProperties(descriptor);
 
-    const authorization = await sign({ descriptor }, options.signatureInput);
-    const message = { descriptor, authorization };
+    const processing = await makeProcessing({tenant: options.tenant, owner: options.owner});
+
+    const recordId = await makeRecordId(descriptor, processing);  // TODO: must compute this recordId
+
+    const authorization = await sign(descriptor , options.signatureInput);
+    const message = { descriptor, processing, authorization, recordId };
 
     return new CollectionsQuery(message);
   }

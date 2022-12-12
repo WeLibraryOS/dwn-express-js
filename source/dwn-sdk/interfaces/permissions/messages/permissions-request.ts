@@ -1,13 +1,13 @@
-import type { AuthCreateOptions, Authorizable, AuthVerificationResult } from '../../../core/types';
+import type { AuthCreateOptions, Authorizable, AuthVerificationResult, ProcessingOptions } from '../../../core/types';
 import type { PermissionsRequestSchema, PermissionsRequestDescriptor } from '../types';
 import type { PermissionScope, PermissionConditions } from '../types';
 
 import { DIDResolver } from '../../../did/did-resolver';
-import { Message } from '../../../core/message';
+import { makeFinalMessage, makeProcessing, makeRecordId, Message } from '../../../core/message';
 import { sign, verifyAuth } from '../../../core/auth';
 import { v4 as uuidv4 } from 'uuid';
 
-type PermissionsRequestOptions = AuthCreateOptions & {
+type PermissionsRequestOptions = AuthCreateOptions & ProcessingOptions & {
   conditions?: PermissionConditions;
   description: string;
   grantedTo: string;
@@ -38,8 +38,14 @@ export class PermissionsRequest extends Message implements Authorizable {
       scope       : opts.scope,
     };
 
-    const auth = await sign({ descriptor }, opts.signatureInput);
-    const message: PermissionsRequestSchema = { descriptor, authorization: auth };
+    ;
+
+    const processing = makeProcessing(opts)
+
+    const recordId = await makeRecordId(descriptor, processing)
+
+    const authorization = await sign(descriptor, opts.signatureInput);
+    const message: PermissionsRequestSchema = { processing, recordId, descriptor, authorization };
 
     return new PermissionsRequest(message);
   }

@@ -1,4 +1,4 @@
-import type { AuthCreateOptions, Authorizable, AuthVerificationResult } from '../../../core/types';
+import type { AuthCreateOptions, Authorizable, AuthVerificationResult, ProcessingOptions } from '../../../core/types';
 import type { PermissionsGrantDescriptor, PermissionsGrantSchema } from '../types';
 import type { PermissionScope, PermissionConditions } from '../types';
 import type { SignatureInput } from '../../../jose/jws/general/types';
@@ -7,11 +7,11 @@ import { CID } from 'multiformats/cid';
 import { sign, verifyAuth } from '../../../core/auth';
 import { DIDResolver } from '../../../did/did-resolver';
 import { generateCid } from '../../../utils/cid';
-import { Message } from '../../../core/message';
+import { makeFinalMessage, Message } from '../../../core/message';
 import { PermissionsRequest, DEFAULT_CONDITIONS } from './permissions-request';
 import { v4 as uuidv4 } from 'uuid';
 
-type PermissionsGrantOptions = AuthCreateOptions & {
+type PermissionsGrantOptions = AuthCreateOptions & ProcessingOptions & {
   conditions?: PermissionConditions;
   description: string;
   grantedTo: string;
@@ -43,10 +43,8 @@ export class PermissionsGrant extends Message implements Authorizable {
       scope       : options.scope,
     };
 
-    const auth = await sign({ descriptor }, options.signatureInput);
-    const message: PermissionsGrantSchema = { descriptor, authorization: auth };
+    return new PermissionsGrant(await makeFinalMessage<PermissionsGrantDescriptor, PermissionsGrantSchema>(descriptor, options));
 
-    return new PermissionsGrant(message);
   }
 
 
@@ -107,7 +105,7 @@ export class PermissionsGrant extends Message implements Authorizable {
   }
 
   get id(): string {
-    return this.message.descriptor.objectId;
+    return this.message.descriptor.permissionsRequestId;
   }
 
   get conditions(): PermissionConditions {

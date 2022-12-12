@@ -4,23 +4,36 @@ import type { GeneralJws, SignatureInput } from '../jose/jws/general/types';
 import { CID } from 'multiformats/cid';
 import { DIDResolver } from '../did/did-resolver';
 
+export type DID = string;
+
+export type BaseDescriptorSchema = {
+  method: string;
+  dataCid?: string;
+  dataFormat?: string;
+};
+
+export type BaseProcessingSchema = {
+  nonce: string;
+  author: DID;
+  recipient: DID
+}
+
 /**
  * Intersection type for all concrete message schema types (e.g. PermissionsRequestSchema)
  */
 export type BaseMessageSchema = {
-  descriptor: {
-    method: string;
-    nonce?: string;
-  };
+  recordId: string
+  descriptor: BaseDescriptorSchema,
+  processing: BaseProcessingSchema
 };
+
+export type AuthMessageSchema = BaseMessageSchema & Authorization;
 
 /**
  * Intersection type for message schema types that include `data`
  */
 export type Data = {
-  descriptor: {
-    dataCid: string;
-  };
+  descriptor: BaseDescriptorSchema
 
   data: string;
 };
@@ -72,7 +85,12 @@ export type AuthCreateOptions = {
   signatureInput: SignatureInput
 };
 
+export type ProcessingOptions = {
+  tenant: string, 
+  owner: string
+}
+
 export type RequestSchema = {
   messages: BaseMessageSchema[]
-  target: string
+  target: DID
 };

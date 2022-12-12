@@ -1,15 +1,14 @@
-import type { AuthCreateOptions, Authorizable, AuthVerificationResult } from '../../../core/types';
+import type { AuthCreateOptions, Authorizable, AuthVerificationResult, ProcessingOptions } from '../../../core/types';
 import type { CollectionsWriteDescriptor, CollectionsWriteSchema } from '../types';
 import { DIDResolver } from '../../../did/did-resolver';
-import { Message } from '../../../core/message';
+import { makeProcessing, makeRecordId, Message } from '../../../core/message';
 import { removeUndefinedProperties } from '../../../utils/object';
 import { sign, verifyAuth } from '../../../core/auth';
 import { getDagCid } from '../../../utils/data';
 
-type CollectionsWriteOptions = AuthCreateOptions & {
+type CollectionsWriteOptions = AuthCreateOptions & ProcessingOptions & {
   protocol?: string;
   schema?: string;
-  recordId: string;
   nonce: string;
   data: Uint8Array;
   dateCreated: number;
@@ -31,8 +30,6 @@ export class CollectionsWrite extends Message implements Authorizable {
       method        : 'CollectionsWrite',
       protocol      : options.protocol,
       schema        : options.schema,
-      recordId      : options.recordId,
-      nonce         : options.nonce,
       dataCid       : dataCid.toString(),
       dateCreated   : options.dateCreated,
       published     : options.published,
@@ -44,8 +41,12 @@ export class CollectionsWrite extends Message implements Authorizable {
     // Error: `undefined` is not supported by the IPLD Data Model and cannot be encoded
     removeUndefinedProperties(descriptor);
 
-    const authorization = await sign({ descriptor }, options.signatureInput);
-    const message = { descriptor, authorization };
+    const processing = await makeProcessing(options);
+
+    const recordId = await makeRecordId(descriptor, processing);
+
+    const authorization = await sign(descriptor , options.signatureInput);
+    const message = { descriptor, processing, authorization, recordId };
 
     return new CollectionsWrite(message);
   }

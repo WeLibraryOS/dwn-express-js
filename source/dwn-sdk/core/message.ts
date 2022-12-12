@@ -1,7 +1,11 @@
-import type { BaseMessageSchema } from './types';
+import type { AuthCreateOptions, AuthMessageSchema, BaseDescriptorSchema, BaseMessageSchema, BaseProcessingSchema, GenericMessageSchema, ProcessingOptions } from './types';
 
 import lodash from 'lodash';
 import { validate } from '../validation/validator';
+import { randomUUID } from 'crypto';
+import { getDagCid } from '../utils/data';
+import { Context } from '../types';
+import { sign } from './auth';
 
 const { cloneDeep, isPlainObject } = lodash;
 export abstract class Message {
@@ -22,6 +26,8 @@ export abstract class Message {
       throw new Error('descriptor must contain method');
     }
 
+    // TODO: add validation for processing
+
     // validate throws an error if message is invalid
     validate(messageType, rawMessage);
 
@@ -38,5 +44,34 @@ export abstract class Message {
 
   toJSON(): BaseMessageSchema {
     return this.message;
+  }
+}
+
+export async function makeRecordId(descriptor: BaseDescriptorSchema, processing: BaseProcessingSchema): Promise<string> {
+  const recordIdGen = {
+    descriptorCid: await (await getDagCid(descriptor)).toString(),
+    processingCid: await (await getDagCid(processing)).toString()
+  }
+  return (await getDagCid(recordIdGen)).toString();
+}
+
+export function makeProcessing(context: Context): BaseProcessingSchema {
+  return {
+    nonce: randomUUID(),
+    author: context.owner,
+    recipient: context.tenant,
+  }
+}
+
+export async function makeFinalMessage<T extends BaseDescriptorSchema, V extends AuthMessageSchema>(descriptor: T, options: AuthCreateOptions & ProcessingOptions): Promise<V> {
+  const processing = makeProcessing(options);
+  const recordId = await makeRecordId(descriptor, processing);
+  const authorization = await sign(descriptor , options.signatureInput);
+
+  return {
+    descriptor,
+    processing,
+    recordId,
+    authorization
   }
 }

@@ -16,7 +16,7 @@ import _ from 'lodash';
 import { exporter } from 'ipfs-unixfs-exporter';
 import { base64, base64url } from 'multiformats/bases/base64';
 
-import { DynamoDBClient, CreateTableCommand, CreateTableCommandInput, ListTablesCommand, PutItemCommand, GetItemCommand, QueryCommand, QueryCommandInput } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, QueryCommandInput } from "@aws-sdk/client-dynamodb";
 import { create_table } from './dynamodb_helpers';
 
 // TODO: move these into a utils file
@@ -72,6 +72,7 @@ export class MessageStoreDynamo implements MessageStore {
 
     
     this.index_schema = {
+      recordId: 'string',
       descriptor: {
         // method: 'string', // don't need this here as we are using desctiptor.method as the hash key
         grantedTo: 'string',
@@ -80,9 +81,8 @@ export class MessageStoreDynamo implements MessageStore {
         scope: {
           method: 'string'
         },
-        recordId: 'string',
         dataCid: 'string',
-        nonce: 'string'
+        permissionRequestId: "string",
       }
     }
   }
@@ -167,7 +167,7 @@ export class MessageStoreDynamo implements MessageStore {
   }
 
   async get(cid: CID, ctx: Context): Promise<BaseMessageSchema> {
-    this.index.get()
+    const query_result = await this.query({ 'descriptor.method': cid.toString() }, ctx);
   }
 
   async query(query: object, ctx: Context): Promise<BaseMessageSchema[]> {
@@ -180,7 +180,7 @@ export class MessageStoreDynamo implements MessageStore {
 
     const query_command_input: QueryCommandInput = {
       TableName: 'messages',
-      KeyConditionExpression: 'descript0r_dataFormat = :data_format',
+      KeyConditionExpression: 'descript0r_method= :method',
       FilterExpression: query_keys.map((key) =>
         `${dynamoKey(key)} = :${dynamoKey(key)}`
       ).join(' AND '),
@@ -188,7 +188,7 @@ export class MessageStoreDynamo implements MessageStore {
         acc[`:${dynamoKey(key)}`] = { S: query_terms.get(key) };
         return acc;
       }, {
-        ":data_format": {
+        ":method": {
           S: query_terms.get('descriptor.method')
          }
        })

@@ -46,8 +46,6 @@ describe("test permission handling", () => {
       data        :  new TextEncoder().encode(JSON.stringify({json_data: "test"})),
       dataFormat  : 'application/json',
       dateCreated : 123,
-      nonce       : 'anyNonce',
-      recordId    : uuidv4(),
       signatureInput: bobSignatureInput
     };
     const collectionsWrite = await CollectionsWrite.create(options);

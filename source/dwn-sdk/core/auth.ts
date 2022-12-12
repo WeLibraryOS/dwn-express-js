@@ -1,4 +1,4 @@
-import type { Authorization, BaseMessageSchema } from './types';
+import type { Authorization, BaseDescriptorSchema, BaseMessageSchema } from './types';
 import type { AuthVerificationResult } from './types';
 import type { SignatureInput } from '../jose/jws/general/types';
 
@@ -105,12 +105,12 @@ export async function verifyAuth(
  * @returns General JWS signature
  */
 export async function sign(
-  message: BaseMessageSchema,
+  descriptor: BaseDescriptorSchema,
   signatureInput: SignatureInput,
   payloadProperties?: { [key: string]: CID }
 
 ): Promise<GeneralJws> {
-  const descriptorCid = await generateCid(message.descriptor);
+  const descriptorCid = await generateCid(descriptor);
 
   const authPayload = { ...payloadProperties, descriptorCid: descriptorCid.toString() };
   const authPayloadStr = JSON.stringify(authPayload);
