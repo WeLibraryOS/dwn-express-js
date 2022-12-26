@@ -89,9 +89,9 @@ export class DWN {
 
     const response = new Response();
 
-    const context: Context = { tenant: request.target, owner: this.owner };
-
     for (const message of request.messages) {
+      const context: Context = message.processing;
+      // TODO: set other Context properties here
       const result = await this.processMessage(message, context);
       response.addMessageResult(result);
     }

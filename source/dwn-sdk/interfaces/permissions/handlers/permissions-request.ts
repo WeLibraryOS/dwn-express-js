@@ -13,7 +13,7 @@ export const handlePermissionsRequest: MethodHandler = async (
 ): Promise<MessageReply> => {
   const request = new PermissionsRequest(message as PermissionsRequestSchema);
 
-  if (ctx.tenant !== request.grantedBy && ctx.tenant !== request.grantedTo) {
+  if (ctx.recipient !== request.grantedBy && ctx.recipient !== request.grantedTo) {
     return new MessageReply({
       status: { code: 400, message: 'grantedBy or grantedTo must be the targeted message recipient' }
     });

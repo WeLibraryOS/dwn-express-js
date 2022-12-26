@@ -41,7 +41,7 @@ export class CollectionsWrite extends Message implements Authorizable {
     // Error: `undefined` is not supported by the IPLD Data Model and cannot be encoded
     removeUndefinedProperties(descriptor);
 
-    const processing = await makeProcessing({owner: options.processing.recipient, tenant: options.processing.author});
+    const processing = await makeProcessing(options);
 
     const recordId = await makeRecordId(descriptor, processing);
 

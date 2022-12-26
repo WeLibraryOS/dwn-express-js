@@ -18,7 +18,7 @@ export async function verifyPermission(grantedTo: string, context: Context, whic
       }
     }
 
-    const processing = makeProcessing(context)
+    const processing = makeProcessing({processing: context})
 
     const permissions_query_message = {
         recordId: await makeRecordId(descriptor, processing),
@@ -36,7 +36,7 @@ export async function verifyPermission(grantedTo: string, context: Context, whic
 export async function grantPermissionsRequest(ctx: Context, request: PermissionsRequest, messageStore: MessageStore, didResolver: DIDResolver) {
 
     // TODO: what are the rules about whether to grant permissions?
-    const processing = makeProcessing(ctx)
+    const processing = makeProcessing({processing: ctx})
 
     const descriptor = {
       method: 'PermissionsGrant',

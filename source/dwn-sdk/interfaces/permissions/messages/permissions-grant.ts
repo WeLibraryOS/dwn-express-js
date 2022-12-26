@@ -70,8 +70,8 @@ export class PermissionsGrant extends Message implements Authorizable {
       scope                : permissionsRequest.scope,
       signatureInput       : signatureInput,
       processing: {
-      author               : permissionsRequest.tenant,
-      recipient            : permissionsRequest.owner
+      author               : permissionsRequest.author,
+      recipient            : permissionsRequest.recipient
       }
     });
   }

@@ -1,3 +1,4 @@
+import { DIDDocument } from 'did-resolver';
 import type { PublicJwk } from '../jose/types';
 
 /**
@@ -73,7 +74,7 @@ export interface DIDMethodResolver {
   resolve(did: string): Promise<DIDResolutionResult>;
 }
 
-export type DIDDocument = {
+export type DIDDocumentX = {
   '@context'?: 'https://www.w3.org/ns/did/v1' | string | string[]
   id: string
   alsoKnownAs?: string[]
@@ -90,7 +91,7 @@ export type DIDDocument = {
 export type ServiceEndpoint = {
   id: string
   type: string
-  serviceEndpoint: string
+  serviceEndpoint: any // TODO: figure out what type this should be, maybe (string | Record<string, unknown>)
   description?: string
 };
 

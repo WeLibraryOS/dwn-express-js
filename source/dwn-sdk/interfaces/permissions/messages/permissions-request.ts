@@ -40,7 +40,7 @@ export class PermissionsRequest extends Message implements Authorizable {
 
     ;
 
-    const processing = makeProcessing({owner: opts.processing.recipient, tenant: opts.processing.author})
+    const processing = makeProcessing(opts)
 
     const recordId = await makeRecordId(descriptor, processing)
 
@@ -54,11 +54,11 @@ export class PermissionsRequest extends Message implements Authorizable {
     return await verifyAuth(this.message, didResolver);
   }
 
-  get tenant(): string {
+  get author(): string {
     return this.message.processing.author;
   }
 
-  get owner(): string {
+  get recipient(): string {
     return this.message.processing.recipient;
   }
 

@@ -38,6 +38,14 @@ export type Data = {
   data: string;
 };
 
+/**
+ * Intersection type for all DWN message descriptor.
+ */
+export type Descriptor = {
+  method: string;
+};
+
+
 export type Attestation = {
   attestation?: GeneralJws;
 };

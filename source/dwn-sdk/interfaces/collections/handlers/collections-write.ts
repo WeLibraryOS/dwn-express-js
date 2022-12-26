@@ -31,7 +31,7 @@ export const handleCollectionsWrite: MethodHandler = async (
     });
   }
 
-    await messageStore.put(message, {author: context.tenant, tenant: context.tenant});
+    await messageStore.put(message, {author: context.author, recipient: context.recipient});
 
     return new MessageReply({
       status: { code: 202, message: 'Accepted' }

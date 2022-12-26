@@ -68,7 +68,8 @@ export class BlockstoreDynamo implements Blockstore {
   }
 
   delete(key: CID, _ctx?: Options): Promise<void> {
-    return this.db.del(key.toString());
+    // TODO: implement delete
+    return
   }
 
   async * putMany(source: AwaitIterable<Pair<CID, Uint8Array>>, _ctx?: Options):
@@ -99,7 +100,8 @@ export class BlockstoreDynamo implements Blockstore {
    * deletes all entries
    */
   clear(): Promise<void> {
-    return this.db.clear();
+    // TODO: implement clear
+    return
   }
 
   batch(): Batch<CID, Uint8Array> {

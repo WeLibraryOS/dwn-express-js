@@ -23,6 +23,8 @@ function FeatureDetectionRead (
   
       const entries = [
         {
+          recordId: message.recordId,
+          processing: message.processing,
           descriptor: {
             method: 'FeatureDetectionRead',
             type: "FeatureDetection",

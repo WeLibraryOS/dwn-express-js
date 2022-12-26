@@ -55,16 +55,16 @@ export async function makeRecordId(descriptor: BaseDescriptorSchema, processing:
   return (await getDagCid(recordIdGen)).toString();
 }
 
-export function makeProcessing(context: Context): BaseProcessingSchema {
+export function makeProcessing(options: ProcessingOptions): BaseProcessingSchema {
   return {
     nonce: randomUUID(),
-    recipient: context.owner,
-    author: context.tenant,
+    recipient: options.processing.recipient,
+    author: options.processing.author,
   }
 }
 
 export async function makeFinalMessage<T extends BaseDescriptorSchema, V extends AuthMessageSchema>(descriptor: T, options: AuthCreateOptions & ProcessingOptions): Promise<Pick<V, 'descriptor' | 'processing' | 'recordId' | 'authorization'>> {
-  const processing = makeProcessing({owner: options.processing.recipient, tenant: options.processing.author});
+  const processing = makeProcessing(options);
   const recordId = await makeRecordId(descriptor, processing);
   const authorization = await sign(descriptor , options.signatureInput);
 

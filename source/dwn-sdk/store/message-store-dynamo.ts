@@ -16,7 +16,7 @@ import _ from 'lodash';
 import { exporter } from 'ipfs-unixfs-exporter';
 import { base64, base64url } from 'multiformats/bases/base64';
 
-import { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, QueryCommandInput } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, QueryCommandInput, AttributeValue } from "@aws-sdk/client-dynamodb";
 import { create_table } from './dynamodb_helpers';
 
 // TODO: move these into a utils file
@@ -168,6 +168,7 @@ export class MessageStoreDynamo implements MessageStore {
 
   async get(cid: CID, ctx: Context): Promise<BaseMessageSchema> {
     const query_result = await this.query({ 'descriptor.method': cid.toString() }, ctx);
+    return query_result[0];
   }
 
   async query(query: object, ctx: Context): Promise<BaseMessageSchema[]> {
@@ -213,7 +214,8 @@ export class MessageStoreDynamo implements MessageStore {
 
   async delete(cid: CID, ctx: Context): Promise<void> {
     await this.db.delete(cid, ctx);
-    await this.index.delete(cid.toString());
+    
+    // TODO: implement delete from index
 
     return;
   }
@@ -240,12 +242,14 @@ export class MessageStoreDynamo implements MessageStore {
 
   async put(messageJson: BaseMessageSchema, ctx: Context): Promise<void> {
 
-    const items = flatten(this.index_schema);
+    const items: Record<string, AttributeValue> = {};
 
     items[dynamoKey('descriptor.method')] = {S: dig('descriptor.method', messageJson)};
     items['message'] = { S: JSON.stringify(messageJson)}
 
-    Array.from(items.keys()).forEach((key) => {
+    const indexItems = flatten(this.index_schema);
+
+    Array.from(indexItems.keys()).forEach((key) => {
       const value = dig(key.split('.'), messageJson);
       if (value) {
         items[dynamoKey(key)] =  {S: value};
@@ -262,7 +266,7 @@ export class MessageStoreDynamo implements MessageStore {
    */
   async clear(): Promise<void> {
     await this.db.clear();
-    await this.index.clear();
+    // TODO: implement clear for index
   }
 }
 
