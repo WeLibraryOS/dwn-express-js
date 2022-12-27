@@ -9,6 +9,7 @@ import { TextEncoder } from "util";
 import { Request } from "../source/dwn-sdk/core/request";
 import { RequestSchema } from "../source/dwn-sdk/core/types";
 import { PermissionsGrant } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-grant";
+import { randomUUID } from "crypto";
 
 // TODO: what is the correct schema for this?
 export const SCHEMA_URL = 'https://schema.org';
@@ -122,13 +123,19 @@ export class TestMethodResolver implements DIDMethodResolver {
     return Buffer.from(JSON.stringify(data)).toString('base64');
   }
 
-  export function featureDetectionMessageBody(targetDID: string): RequestSchema {
+  export function featureDetectionMessageBody(author: string, targetDID: string): RequestSchema {
     return {
       "target": targetDID,
       "messages": [
         {
-            "descriptor": {
-                "method": "FeatureDetectionRead"
+          recordId: randomUUID(),
+          processing: {
+            nonce: randomUUID(),
+            recipient: targetDID,
+            author: author
+          },
+            descriptor: {
+                method: "FeatureDetectionRead"
             }
         }
       ]

@@ -4,7 +4,8 @@ import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeD
 
 describe("test message handling", () => {
 
-  const testDid = 'did:test:alice';
+  const recipientDID = 'did:test:alice';
+  const authorDID = 'did:test:bob';
 
   let dwn: DWN;
   let testResolver: TestMethodResolver;
@@ -13,10 +14,11 @@ describe("test message handling", () => {
   beforeAll(async () => {
     testResolver = new TestMethodResolver()
     keyPair = await makeKeyPair();
-    testResolver.addKey(testDid, keyPair.publicJwk);
+    testResolver.addKey(recipientDID, keyPair.publicJwk);
+    
     dwn = await createDWN({
       DIDMethodResolvers: [testResolver],
-      owner: testDid,
+      owner: recipientDID,
       indexObjects: [{
         data: {
           issuer: "string",
@@ -29,14 +31,14 @@ describe("test message handling", () => {
   });
 
   test("feature detection", async () => {
-    const messageBody  = featureDetectionMessageBody(testDid)
+    const messageBody  = featureDetectionMessageBody(authorDID, recipientDID)
     const res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(200);
   });
 
   test("collection query", async () => {
-    const messageBody = await collectionQueryMessageBody(keyPair, testDid);
+    const messageBody = await collectionQueryMessageBody(keyPair, recipientDID);
     const res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(200);
@@ -44,7 +46,7 @@ describe("test message handling", () => {
 
   test("object storage and query", async () => {
 
-    const messageBody = makeWriteVCMessageBody(keyPair, testDid);
+    const messageBody = await makeWriteVCMessageBody(keyPair, recipientDID);
     
     var res = await dwn.processRequest(messageBody);
     await expect(res.replies).toHaveLength(1);
@@ -60,10 +62,10 @@ describe("test message handling", () => {
       }
     };
 
-    const query_jws = await makeTestJWS(query_descriptor, keyPair, testDid);
+    const query_jws = await makeTestJWS(query_descriptor, keyPair, recipientDID);
     
     const query_message_body  = {
-      "target": testDid,
+      "target": recipientDID,
       "messages": [
         {
           "descriptor": query_descriptor,

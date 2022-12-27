@@ -17,7 +17,6 @@
       "additionalProperties": false,
       "required": [
         "method",
-        "nonce",
         "dataCid",
         "dateCreated",
         "dataFormat"
@@ -33,9 +32,6 @@
           "type": "string"
         },
         "schema": {
-          "type": "string"
-        },
-        "nonce": {
           "type": "string"
         },
         "dataCid": {
