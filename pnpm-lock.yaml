@@ -2,6 +2,9 @@ lockfileVersion: 5.4
 
 specifiers:
   '@aws-sdk/client-dynamodb': ^3.193.0
+  '@aws-sdk/lib-dynamodb': ^3.241.0
+  '@aws-sdk/smithy-client': ^3.234.0
+  '@aws-sdk/types': ^3.226.0
   '@babel/core': '>=7.0.0 <8.0.0'
   '@babel/preset-typescript': ^7.18.6
   '@ipld/dag-cbor': 7.0.1
@@ -15,6 +18,7 @@ specifiers:
   '@types/node': ^18.11.3
   '@types/supertest': ^2.0.12
   ajv: 8.11.0
+  aws-sdk-client-mock: ^2.0.1
   cross-fetch: 3.1.5
   date-fns: 2.28.0
   did-resolver: ^4.0.1
@@ -47,6 +51,8 @@ specifiers:
 
 dependencies:
   '@aws-sdk/client-dynamodb': 3.193.0
+  '@aws-sdk/lib-dynamodb': 3.241.0_lq6qs7gnbil2w3fpj6pdmtmmeq
+  '@aws-sdk/smithy-client': 3.234.0
   '@ipld/dag-cbor': 7.0.1
   '@noble/ed25519': 1.6.0
   '@noble/secp256k1': 1.5.5
@@ -76,6 +82,7 @@ dependencies:
   uuid: 8.3.2
 
 devDependencies:
+  '@aws-sdk/types': 3.226.0
   '@babel/core': 7.19.6
   '@babel/preset-typescript': 7.18.6_@babel+core@7.19.6
   '@types/express': 4.17.14
@@ -83,6 +90,7 @@ devDependencies:
   '@types/json-templates': 3.0.0
   '@types/node': 18.11.3
   '@types/supertest': 2.0.12
+  aws-sdk-client-mock: 2.0.1
   esbuild: 0.14.54
   esbuild-jest: 0.5.0_esbuild@0.14.54
   jest: 28.1.3_3jn5vyrmgj3hqy45c7z2afw6d4
@@ -119,7 +127,7 @@ packages:
       '@aws-crypto/sha256-js': 2.0.0
       '@aws-crypto/supports-web-crypto': 2.0.2
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.193.0
+      '@aws-sdk/types': 3.226.0
       '@aws-sdk/util-locate-window': 3.188.0
       '@aws-sdk/util-utf8-browser': 3.188.0
       tslib: 1.14.1
@@ -129,7 +137,7 @@ packages:
     resolution: {integrity: sha512-VZY+mCY4Nmrs5WGfitmNqXzaE873fcIZDu54cbaDaaamsaTOP1DBImV9F4pICc3EHjQXujyE8jig+PFCaew9ig==}
     dependencies:
       '@aws-crypto/util': 2.0.2
-      '@aws-sdk/types': 3.193.0
+      '@aws-sdk/types': 3.226.0
       tslib: 1.14.1
     dev: false
 
@@ -142,7 +150,7 @@ packages:
   /@aws-crypto/util/2.0.2:
     resolution: {integrity: sha512-Lgu5v/0e/BcrZ5m/IWqzPUf3UYFTy/PpeED+uc9SWUR1iZQL8XXbGQg10UfllwwBryO3hFF5dizK+78aoXC1eA==}
     dependencies:
-      '@aws-sdk/types': 3.193.0
+      '@aws-sdk/types': 3.226.0
       '@aws-sdk/util-utf8-browser': 3.188.0
       tslib: 1.14.1
     dev: false
@@ -420,6 +428,21 @@ packages:
       tslib: 2.4.0
     dev: false
 
+  /@aws-sdk/lib-dynamodb/3.241.0_lq6qs7gnbil2w3fpj6pdmtmmeq:
+    resolution: {integrity: sha512-YTNEQbiJhthlDzdsnIGfGzUi8wrod1znn7U08fdCs2V3RCWrdcYgaIeXbjH9apelu2P3u7iccFGLnihabmApGg==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@aws-sdk/client-dynamodb': ^3.0.0
+      '@aws-sdk/smithy-client': ^3.0.0
+      '@aws-sdk/types': ^3.0.0
+    dependencies:
+      '@aws-sdk/client-dynamodb': 3.193.0
+      '@aws-sdk/smithy-client': 3.234.0
+      '@aws-sdk/types': 3.226.0
+      '@aws-sdk/util-dynamodb': 3.241.0
+      tslib: 2.4.0
+    dev: false
+
   /@aws-sdk/middleware-content-length/3.193.0:
     resolution: {integrity: sha512-em0Sqo7O7DFOcVXU460pbcYuIjblDTZqK2YE62nQ0T+5Nbj+MSjuoite+rRRdRww9VqBkUROGKON45bUNjogtQ==}
     engines: {node: '>= 12.0.0'}
@@ -513,6 +536,13 @@ packages:
   /@aws-sdk/middleware-stack/3.193.0:
     resolution: {integrity: sha512-Ix5d7gE6bZwFNIVf0dGnjYuymz1gjitNoAZDPpv1nEZlUMek/jcno5lmzWFzUZXY/azpbIyaPwq/wm/c69au5A==}
     engines: {node: '>= 12.0.0'}
+    dependencies:
+      tslib: 2.4.0
+    dev: false
+
+  /@aws-sdk/middleware-stack/3.226.0:
+    resolution: {integrity: sha512-85wF29LvPvpoed60fZGDYLwv1Zpd/cM0C22WSSFPw1SSJeqO4gtFYyCg2squfT3KI6kF43IIkOCJ+L7GtryPug==}
+    engines: {node: '>=14.0.0'}
     dependencies:
       tslib: 2.4.0
     dev: false
@@ -614,10 +644,25 @@ packages:
       tslib: 2.4.0
     dev: false
 
+  /@aws-sdk/smithy-client/3.234.0:
+    resolution: {integrity: sha512-8AtR/k4vsFvjXeQbIzq/Wy7Nbk48Ou0wUEeVYPHWHPSU8QamFWORkOwmKtKMfHAyZvmqiAPeQqHFkq+UJhWyyQ==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@aws-sdk/middleware-stack': 3.226.0
+      '@aws-sdk/types': 3.226.0
+      tslib: 2.4.0
+    dev: false
+
   /@aws-sdk/types/3.193.0:
     resolution: {integrity: sha512-LV/wcPolRZKORrcHwkH59QMCkiDR5sM+9ZtuTxvyUGG2QFW/kjoxs08fUF10OWNJMrotBI+czDc5QJRgN8BlAw==}
     engines: {node: '>= 12.0.0'}
     dev: false
+
+  /@aws-sdk/types/3.226.0:
+    resolution: {integrity: sha512-MmmNHrWeO4man7wpOwrAhXlevqtOV9ZLcH4RhnG5LmRce0RFOApx24HoKENfFCcOyCm5LQBlsXCqi0dZWDWU0A==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      tslib: 2.4.0
 
   /@aws-sdk/url-parser/3.193.0:
     resolution: {integrity: sha512-hwD1koJlOu2a6GvaSbNbdo7I6a3tmrsNTZr8bCjAcbqpc5pDThcpnl/Uaz3zHmMPs92U8I6BvWoK6pH8By06qw==}
@@ -688,6 +733,13 @@ packages:
       '@aws-sdk/node-config-provider': 3.193.0
       '@aws-sdk/property-provider': 3.193.0
       '@aws-sdk/types': 3.193.0
+      tslib: 2.4.0
+    dev: false
+
+  /@aws-sdk/util-dynamodb/3.241.0:
+    resolution: {integrity: sha512-1gDDxlj4fB9YXzUB36D4ji4kqFBMdWCklkPAhkCxaAeFAqAs4NvKGZK9k4AzxJoRD6vwsl+O7GdANjbTHweauQ==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
       tslib: 2.4.0
     dev: false
 
@@ -1680,6 +1732,18 @@ packages:
       type-detect: 4.0.8
     dev: true
 
+  /@sinonjs/commons/2.0.0:
+    resolution: {integrity: sha512-uLa0j859mMrg2slwQYdO/AkrOfmH+X6LTVmNTS9CqexuE2IvVORIkSpJLqePAbEnKJ77aMmCwr1NUZ57120Xcg==}
+    dependencies:
+      type-detect: 4.0.8
+    dev: true
+
+  /@sinonjs/fake-timers/10.0.2:
+    resolution: {integrity: sha512-SwUDyjWnah1AaNl7kxsa7cfLhlTYoiyhDAIgyh+El30YvXs/o7OLXpYH88Zdhyx9JExKrmHDJ+10bwIcY80Jmw==}
+    dependencies:
+      '@sinonjs/commons': 2.0.0
+    dev: true
+
   /@sinonjs/fake-timers/9.1.2:
     resolution: {integrity: sha512-BPS4ynJW/o92PUR4wgriz2Ud5gpST5vz6GQfMixEDK0Z8ZCUv2M7SkBLykH56T++Xs+8ln9zTGbOvNGIe02/jw==}
     dependencies:
@@ -1690,6 +1754,14 @@ packages:
     resolution: {integrity: sha512-cZ7rKJTLiE7u7Wi/v9Hc2fs3Ucc3jrWeMgPHbbTCeVAB2S0wOBbYlkJVeNSL04i7fdhT8wIbDq1zhC/PXTD2SA==}
     dependencies:
       '@sinonjs/commons': 1.8.3
+      lodash.get: 4.4.2
+      type-detect: 4.0.8
+    dev: true
+
+  /@sinonjs/samsam/7.0.1:
+    resolution: {integrity: sha512-zsAk2Jkiq89mhZovB2LLOdTCxJF4hqqTToGP0ASWlhp4I1hqOjcfmZGafXntCN7MDC6yySH0mFHrYtHceOeLmw==}
+    dependencies:
+      '@sinonjs/commons': 2.0.0
       lodash.get: 4.4.2
       type-detect: 4.0.8
     dev: true
@@ -1887,6 +1959,16 @@ packages:
     dependencies:
       '@types/mime': 3.0.1
       '@types/node': 18.11.3
+    dev: true
+
+  /@types/sinon/10.0.13:
+    resolution: {integrity: sha512-UVjDqJblVNQYvVNUsj0PuYYw0ELRmgt1Nt5Vk0pT5f16ROGfcKJY8o1HVuMOJOpD727RrGB9EGvoaTQE5tgxZQ==}
+    dependencies:
+      '@types/sinonjs__fake-timers': 8.1.2
+    dev: true
+
+  /@types/sinonjs__fake-timers/8.1.2:
+    resolution: {integrity: sha512-9GcLXF0/v3t80caGs5p2rRfkB+a8VBGLJZVih6CNFkx8IZ994wiKKLSRs9nuFwk1HevWs/1mnUmkApGrSGsShA==}
     dev: true
 
   /@types/stack-utils/2.0.1:
@@ -2090,6 +2172,14 @@ packages:
     resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
     engines: {node: '>= 4.5.0'}
     hasBin: true
+    dev: true
+
+  /aws-sdk-client-mock/2.0.1:
+    resolution: {integrity: sha512-Ib/AnI8ZdoIxOBbKSs28TUwJb7FI/AYVYn48PcXx6guk5fBs4GZJJEc+Ci9aImRtVmgO6jHN/6Etz17fr6j3qw==}
+    dependencies:
+      '@types/sinon': 10.0.13
+      sinon: 14.0.2
+      tslib: 2.4.0
     dev: true
 
   /babel-jest/26.6.3_@babel+core@7.19.6:
@@ -4680,6 +4770,16 @@ packages:
       path-to-regexp: 1.8.0
     dev: true
 
+  /nise/5.1.4:
+    resolution: {integrity: sha512-8+Ib8rRJ4L0o3kfmyVCL7gzrohyDe0cMFTBa2d364yIrEGMEoetznKJx899YxjybU6bL9SQkYPSBBs1gyYs8Xg==}
+    dependencies:
+      '@sinonjs/commons': 2.0.0
+      '@sinonjs/fake-timers': 10.0.2
+      '@sinonjs/text-encoding': 0.7.2
+      just-extend: 4.2.1
+      path-to-regexp: 1.8.0
+    dev: true
+
   /nist-weierstrauss/1.5.1:
     resolution: {integrity: sha512-TtfkjxfCPYWljG4zSQgHVnzpwNj5pTlIKSxyPlXpsRpA9B8PJchKoIDe7ZIvfzPwZTzawhhGAqngFrM+7Elf0g==}
     engines: {node: '>=14.06'}
@@ -5319,6 +5419,17 @@ packages:
       supports-color: 7.2.0
     dev: true
 
+  /sinon/14.0.2:
+    resolution: {integrity: sha512-PDpV0ZI3ZCS3pEqx0vpNp6kzPhHrLx72wA0G+ZLaaJjLIYeE0n8INlgaohKuGy7hP0as5tbUd23QWu5U233t+w==}
+    dependencies:
+      '@sinonjs/commons': 2.0.0
+      '@sinonjs/fake-timers': 9.1.2
+      '@sinonjs/samsam': 7.0.1
+      diff: 5.1.0
+      nise: 5.1.4
+      supports-color: 7.2.0
+    dev: true
+
   /sisteransi/1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
     dev: true
@@ -5697,7 +5808,6 @@ packages:
 
   /tslib/2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
-    dev: false
 
   /type-detect/4.0.8:
     resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==}

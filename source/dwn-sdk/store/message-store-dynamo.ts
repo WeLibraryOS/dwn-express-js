@@ -101,7 +101,8 @@ export class MessageStoreDynamo implements MessageStore {
     // calling `searchIndex()` twice without closing its DB causes the process to hang (ie. calling this method consecutively),
     // so check to see if the index has already been "opened" before opening it again.
     if (!this.index) {
-      this.index = new DynamoDBClient({});
+      // allow for injecting a DB for testing purposes
+      this.index = this.config.injectDB || new DynamoDBClient({});
 
       /*
       const items = flatten(this.index_schema);

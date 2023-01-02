@@ -1,6 +1,9 @@
 import { DWN } from "../source/dwn-sdk";
 import createDWN from "../source/dwn-sdk-wrapper";
 import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, makeWriteVCMessageBody, SCHEMA_URL, TestMethodResolver } from "./helpers";
+import { mockClient } from "aws-sdk-client-mock";
+import { DynamoDBClient, ListTablesCommand, CreateTableCommand, CreateTableCommandInput, PutItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 describe("test message handling", () => {
 
@@ -10,11 +13,18 @@ describe("test message handling", () => {
   let dwn: DWN;
   let testResolver: TestMethodResolver;
   let keyPair: KeyPair;
+  let mockDB;
 
   beforeAll(async () => {
     testResolver = new TestMethodResolver()
     keyPair = await makeKeyPair();
     testResolver.addKey(recipientDID, keyPair.publicJwk);
+
+    mockDB = mockClient(DynamoDBClient);
+
+    mockDB.on(ListTablesCommand).resolves({
+        TableNames: ['messages']
+    });
     
     dwn = await createDWN({
       DIDMethodResolvers: [testResolver],
@@ -26,8 +36,13 @@ describe("test message handling", () => {
         descriptor: {
           schema: "string"
         }
-      }]
+      }],
+      injectDB: mockDB
     });
+  });
+
+  beforeEach(() => {
+    mockDB.reset();
   });
 
   test("feature detection", async () => {
