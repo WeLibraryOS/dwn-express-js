@@ -10,6 +10,7 @@ import { Request } from "../source/dwn-sdk/core/request";
 import { RequestSchema } from "../source/dwn-sdk/core/types";
 import { PermissionsGrant } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-grant";
 import { randomUUID } from "crypto";
+import { makeRecordId } from "../source/dwn-sdk/core/message";
 
 // TODO: what is the correct schema for this?
 export const SCHEMA_URL = 'https://schema.org';
@@ -141,26 +142,39 @@ export class TestMethodResolver implements DIDMethodResolver {
       ]
     }
   }
-  export async function collectionQueryMessageBody(keyPair: KeyPair, did: string): Promise<RequestSchema> {
-    const descriptor = {
-      "nonce": "9b9c7f1fcabfc471ee2682890b58a427ba2c8db59ddf3c2d5ad16ccc84bb3106",
-      "method": "CollectionsQuery",
-      "filter": {"dataFormat": "application/json"}
-    };
 
-    const jws = await makeTestJWS(descriptor, keyPair, did);
+  // TODO: what should the did be for this?
+  export async function collectionQueryMessageBody(keyPair: KeyPair, did: string): Promise<RequestSchema> {
+    const query_descriptor = {
+      "method": "CollectionsQuery",
+      "filter": {
+        data: {
+          issuer: did,
+        },
+        schema: SCHEMA_URL
+      }
+    };
+    const query_jws = await makeTestJWS(query_descriptor, keyPair, did);
+
+    const query_processing = {
+      "nonce": randomUUID(),
+      "author": did,
+      "recipient": did
+    }
     
-    const messageBody  = {
+    const query_message_body  = {
       "target": did,
       "messages": [
         {
-          "descriptor": descriptor,
-          "authorization": jws
+          "descriptor": query_descriptor,
+          "authorization": query_jws,
+          "processing": query_processing,
+          "recordId": await makeRecordId(query_descriptor, query_processing)
         }
       ]
     }
 
-    return messageBody;
+    return query_message_body;
   }
 
   export async function makeWriteVCMessageBody(keyPair: KeyPair, did: string): Promise<RequestSchema> {
@@ -176,6 +190,12 @@ export class TestMethodResolver implements DIDMethodResolver {
     };
 
     const jws = await makeTestJWS(descriptor, keyPair, did);
+
+    const processing = {
+      nonce: randomUUID(),
+      recipient: did,
+      author: did
+    }
     
     const messageBody  = {
       "target": did,
@@ -183,7 +203,9 @@ export class TestMethodResolver implements DIDMethodResolver {
         {
           "data": Buffer.from(dataCid.data).toString('base64'),
           "descriptor": descriptor,
-          "authorization": jws
+          "authorization": jws,
+          "processing": processing,
+          "recordId": await makeRecordId(descriptor, processing)
         }
       ]
     }

@@ -120,7 +120,7 @@ export class MessageStoreDynamo implements MessageStore {
           AttributeName: dynamoKey('descriptor.method'),
           KeyType: 'HASH'
         }],
-        null, [
+        undefined, [
         {
           AttributeName: dynamoKey('descriptor.method'),
           AttributeType: 'S'

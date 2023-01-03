@@ -33,11 +33,11 @@ export function validate(schemaName: string, payload: any): void {
   // AJV is configured by default to stop validating after the 1st error is encountered which means
   // there will only ever be one error;
   const [ errorObj ] = validateFn.errors;
-  let { instancePath, message } = errorObj;
+  let { instancePath, message, params } = errorObj;
 
   if (!instancePath) {
     instancePath = schemaName;
   }
 
-  throw new Error(`${instancePath}: ${message}`);
+  throw new Error(`${instancePath}: ${message} ${JSON.stringify(params)}}`);
 }

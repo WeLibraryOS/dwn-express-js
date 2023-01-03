@@ -5,11 +5,34 @@
   "additionalProperties": false,
   "required": [
     "authorization",
-    "descriptor"
+    "descriptor",
+    "processing",
+    "recordId"
   ],
   "properties": {
+    "recordId": {"type": "string"},
     "authorization": {
       "$ref": "https://identity.foundation/dwn/json-schemas/general-jws.json"
+    },
+    "processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nonce",
+        "recipient",
+        "author"
+      ],
+      "properties": {
+        "nonce": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        }
+      }
     },
     "descriptor": {
       "type": "object",

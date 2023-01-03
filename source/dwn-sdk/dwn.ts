@@ -92,7 +92,8 @@ export class DWN {
     for (const message of request.messages) {
       const context: Context = message.processing;
       // TODO: set other Context properties here
-      if (!context) throw new Error('Context is undefined because message does not have a processing property')
+      if (!context)
+        throw new Error('Context is undefined because message does not have a processing property')
       const result = await this.processMessage(message, context);
       response.addMessageResult(result);
     }
