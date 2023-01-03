@@ -9,7 +9,6 @@ import { getDagCid } from '../../../utils/data';
 type CollectionsWriteOptions = AuthCreateOptions & ProcessingOptions & {
   protocol?: string;
   schema?: string;
-  nonce: string;
   data: Uint8Array;
   dateCreated: number;
   published?: boolean;

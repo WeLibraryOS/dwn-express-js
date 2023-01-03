@@ -5,6 +5,7 @@ import { Request } from "../source/dwn-sdk/core/request";
 
 import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { randomUUID } from "crypto";
 
 describe("test permission handling", () => {
 
@@ -41,7 +42,12 @@ describe("test permission handling", () => {
       data        :  new TextEncoder().encode(JSON.stringify({json_data: "test"})),
       dataFormat  : 'application/json',
       dateCreated : 123,
-      signatureInput: bobSignatureInput
+      signatureInput: bobSignatureInput,
+      processing: {
+        recipient: aliceDid,
+        author: bobDid,
+        nonce: randomUUID()
+      }
     };
     const collectionsWrite = await CollectionsWrite.create(options);
 
