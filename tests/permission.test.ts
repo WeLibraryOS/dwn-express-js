@@ -1,23 +1,21 @@
 import { DWN } from "../source/dwn-sdk";
-import createDWN from "../source/dwn-sdk-wrapper";
 import { CollectionsWrite } from "../source/dwn-sdk/interfaces/collections/messages/collections-write";
-import { dataAsBase64, KeyPair, makeDataCID, makeKeyPair, makePermissionGrantMessageBody, makeSignatureInput, makeTestJWS, makeTestVerifiableCredential, TestMethodResolver } from "./helpers";
-import { v4 as uuidv4 } from 'uuid';
+import { makeTestDWN, KeyPair, makeKeyPair, makePermissionGrantMessageBody, makeSignatureInput, TestMethodResolver } from "./helpers";
 import { Request } from "../source/dwn-sdk/core/request";
-import { PermissionsRequest } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-request";
-import { PermissionsGrant } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-grant";
 
-import LevelMemory from "level-mem";
+import { mockClient } from "aws-sdk-client-mock";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 describe("test permission handling", () => {
 
   const aliceDid = 'did:test:alice';
   const bobDid = 'did:test:bob';
 
-  let aliceKeys, bobKeys: KeyPair;
+  let aliceKeys: KeyPair, bobKeys: KeyPair;
 
   let dwn: DWN;
   let testResolver: TestMethodResolver;
+  let mockDB: any;
   
 
   beforeAll(async () => {
@@ -29,11 +27,8 @@ describe("test permission handling", () => {
     bobKeys = await makeKeyPair();
     testResolver.addKey(bobDid, bobKeys.publicJwk);
     
-    dwn = await createDWN({
-      injectDB: new LevelMemory(),
-      DIDMethodResolvers: [testResolver],
-      owner: aliceDid
-    });
+    mockDB = mockClient(DynamoDBClient);
+    dwn = await makeTestDWN(mockDB, aliceKeys, aliceDid, testResolver)
   });
 
   test("permission request", async () => {

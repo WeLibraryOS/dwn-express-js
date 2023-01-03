@@ -11,6 +11,10 @@ import { RequestSchema } from "../source/dwn-sdk/core/types";
 import { PermissionsGrant } from "../source/dwn-sdk/interfaces/permissions/messages/permissions-grant";
 import { randomUUID } from "crypto";
 import { makeRecordId } from "../source/dwn-sdk/core/message";
+import { DynamoDBClient, ListTablesCommand } from "@aws-sdk/client-dynamodb";
+import { AwsStub } from "aws-sdk-client-mock";
+import createDWN from "../source/dwn-sdk-wrapper";
+import { DWN } from "../source/dwn-sdk";
 
 // TODO: what is the correct schema for this?
 export const SCHEMA_URL = 'https://schema.org';
@@ -226,3 +230,31 @@ export class TestMethodResolver implements DIDMethodResolver {
 
     return Request.createFromMessage(granteeDid, permissionsGrant.toObject());
   }
+
+export async function makeTestDWN(mockDB: AwsStub<object, any>, keyPair: KeyPair, ownerDID: string, testResolver: (TestMethodResolver | null) = null): Promise<DWN> {
+  
+  if (!testResolver) {
+    testResolver = new TestMethodResolver()
+    testResolver.addKey(ownerDID, keyPair.publicJwk);
+  }
+
+  mockDB.on(ListTablesCommand).resolves({
+      TableNames: ['messages']
+  });
+  
+  const dwn = await createDWN({
+    DIDMethodResolvers: [testResolver],
+    owner: ownerDID,
+    indexObjects: [{
+      data: {
+        issuer: "string",
+      },
+      descriptor: {
+        schema: "string"
+      }
+    }],
+    injectDB: mockDB
+  });
+
+  return dwn;
+}

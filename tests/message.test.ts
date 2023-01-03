@@ -1,8 +1,7 @@
 import { DWN } from "../source/dwn-sdk";
-import createDWN from "../source/dwn-sdk-wrapper";
-import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestJWS, makeTestVerifiableCredential, makeWriteVCMessageBody, SCHEMA_URL, TestMethodResolver } from "./helpers";
+import { collectionQueryMessageBody, featureDetectionMessageBody, KeyPair, makeDataCID, makeKeyPair, makeTestDWN, makeTestJWS, makeTestVerifiableCredential, makeWriteVCMessageBody, SCHEMA_URL, TestMethodResolver } from "./helpers";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
-import { DynamoDBClient, ListTablesCommand, CreateTableCommand, CreateTableCommandInput, PutItemCommand, GetItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 
 describe("test message handling", () => {
 
@@ -10,34 +9,13 @@ describe("test message handling", () => {
   const authorDID = 'did:test:bob';
 
   let dwn: DWN;
-  let testResolver: TestMethodResolver;
   let keyPair: KeyPair;
   let mockDB: AwsStub<object, any>;
 
   beforeAll(async () => {
-    testResolver = new TestMethodResolver()
     keyPair = await makeKeyPair();
-    testResolver.addKey(ownerDID, keyPair.publicJwk);
-
     mockDB = mockClient(DynamoDBClient);
-
-    mockDB.on(ListTablesCommand).resolves({
-        TableNames: ['messages']
-    });
-    
-    dwn = await createDWN({
-      DIDMethodResolvers: [testResolver],
-      owner: ownerDID,
-      indexObjects: [{
-        data: {
-          issuer: "string",
-        },
-        descriptor: {
-          schema: "string"
-        }
-      }],
-      injectDB: mockDB
-    });
+    dwn = await makeTestDWN(mockDB, keyPair, ownerDID)
   });
 
   beforeEach(() => {
