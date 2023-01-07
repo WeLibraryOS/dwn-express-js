@@ -20,29 +20,6 @@ describe("test message handling", () => {
 
   beforeEach(() => {
     mockDB.reset();
-  });
-
-  test("feature detection", async () => {
-    const messageBody  = featureDetectionMessageBody(authorDID, ownerDID)
-    const res = await dwn.processRequest(messageBody);
-    await expect(res.replies).toHaveLength(1);
-    await expect(res.replies![0].status.code).toBe(200);
-  });
-
-  test("collection query", async () => {
-    const messageBody = await collectionQueryMessageBody(keyPair, ownerDID);
-    const res = await dwn.processRequest(messageBody);
-    await expect(res.replies).toHaveLength(1);
-    await expect(res.replies![0].status.code).toBe(200);
-  })
-
-  test("object storage and query", async () => {
-
-    const messageBody = await makeWriteVCMessageBody(keyPair, ownerDID);
-    
-    var res = await dwn.processRequest(messageBody);
-    await expect(res.replies).toHaveLength(1);
-    await expect(res.replies![0].status.code).toBe(202);
 
     mockDB.on(QueryCommand).resolves({
       // TODO: use the real message data here
@@ -67,6 +44,29 @@ describe("test message handling", () => {
         }
       }]
     });
+  });
+
+  test("feature detection", async () => {
+    const messageBody  = featureDetectionMessageBody(authorDID, ownerDID)
+    const res = await dwn.processRequest(messageBody);
+    await expect(res.replies).toHaveLength(1);
+    await expect(res.replies![0].status.code).toBe(200);
+  });
+
+  test("collection query", async () => {
+    const messageBody = await collectionQueryMessageBody(keyPair, ownerDID);
+    const res = await dwn.processRequest(messageBody);
+    await expect(res.replies).toHaveLength(1);
+    await expect(res.replies![0].status.code).toBe(200);
+  })
+
+  test("object storage and query", async () => {
+
+    const messageBody = await makeWriteVCMessageBody(keyPair, ownerDID);
+    
+    var res = await dwn.processRequest(messageBody);
+    await expect(res.replies).toHaveLength(1);
+    await expect(res.replies![0].status.code).toBe(202);
 
     const query_message_body = await collectionQueryMessageBody(keyPair, ownerDID);
 
