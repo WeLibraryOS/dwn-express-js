@@ -21,6 +21,7 @@ export class CollectionsWrite extends Message implements Authorizable {
 
   constructor(message: CollectionsWriteSchema) {
     super(message);
+    this.message = message;
   }
 
   static async create(options: CollectionsWriteOptions): Promise<CollectionsWrite> {

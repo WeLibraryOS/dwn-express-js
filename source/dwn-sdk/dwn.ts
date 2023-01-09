@@ -76,6 +76,12 @@ export class DWN {
     return this.messageStore.close();
   }
 
+  setContext(message: BaseMessageSchema): Context {
+    const context: Context = {...message.processing};
+    context.owner = this.owner;
+    return context
+  }
+
   async processRequest(rawRequest: any): Promise<Response> {
     let request: RequestSchema;
 
@@ -89,9 +95,9 @@ export class DWN {
 
     const response = new Response();
 
-    for (const message of request.messages) {
-      const context: Context = message.processing;
-      // TODO: set other Context properties here
+    for (const message of request.messages) {      
+      const context = this.setContext(message);
+
       if (!context)
         throw new Error('Context is undefined because message does not have a processing property')
       const result = await this.processMessage(message, context);

@@ -225,7 +225,11 @@ export class TestMethodResolver implements DIDMethodResolver {
       grantedBy   : grantorDid,
       grantedTo   : granteeDid,
       scope       : { method: 'CollectionsWrite' },
-      signatureInput: aliceSignatureInput
+      signatureInput: aliceSignatureInput,
+      processing: {
+        recipient: grantorDid,
+        author: granteeDid
+      }
     });
 
     return Request.createFromMessage(granteeDid, permissionsGrant.toObject());

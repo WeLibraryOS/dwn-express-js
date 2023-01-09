@@ -1,10 +1,10 @@
 import { DWN } from "../source/dwn-sdk";
 import { CollectionsWrite } from "../source/dwn-sdk/interfaces/collections/messages/collections-write";
-import { makeTestDWN, KeyPair, makeKeyPair, makePermissionGrantMessageBody, makeSignatureInput, TestMethodResolver } from "./helpers";
+import { makeTestDWN, KeyPair, makeKeyPair, makePermissionGrantMessageBody, makeSignatureInput, TestMethodResolver, makeWriteVCMessageBody } from "./helpers";
 import { Request } from "../source/dwn-sdk/core/request";
 
 import { mockClient } from "aws-sdk-client-mock";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { randomUUID } from "crypto";
 
 describe("test permission handling", () => {
@@ -36,23 +36,14 @@ describe("test permission handling", () => {
 
     expect(dwn.owner).toBe(aliceDid);
 
-    const bobSignatureInput = makeSignatureInput(bobKeys.privateJwk, bobDid);
+    const request = await makeWriteVCMessageBody(bobKeys, bobDid);
 
-    const options = {
-      data        :  new TextEncoder().encode(JSON.stringify({json_data: "test"})),
-      dataFormat  : 'application/json',
-      dateCreated : 123,
-      signatureInput: bobSignatureInput,
-      processing: {
-        recipient: aliceDid,
-        author: bobDid,
-        nonce: randomUUID()
-      }
-    };
-    const collectionsWrite = await CollectionsWrite.create(options);
+    mockDB.on(QueryCommand).resolves({
+      Items: []
+    });
 
     // bob tries to write to alice's collection
-    let res = await dwn.processRequest(Request.createFromMessage(bobDid, collectionsWrite.toObject()));
+    let res = await dwn.processRequest(request);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(401);
 
@@ -63,7 +54,7 @@ describe("test permission handling", () => {
     await expect(res.replies![0].status.code).toBe(202);
 
     // bob again tries again to write to alice's collection
-    res = await dwn.processRequest(Request.createFromMessage(bobDid, collectionsWrite.toObject()));
+    res = await dwn.processRequest(request);
     await expect(res.replies).toHaveLength(1);
     await expect(res.replies![0].status.code).toBe(202);
   });

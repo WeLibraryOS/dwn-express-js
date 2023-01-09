@@ -1,5 +1,5 @@
 import type { Context } from '../types';
-import type { BaseMessageSchema } from '../core/types';
+import type { AuthMessageSchema } from '../core/types';
 import type { MessageStore } from '../store/message-store';
 import type { MessageReply } from '../core/message-reply';
 
@@ -8,7 +8,7 @@ import { Message } from '../core/message';
 
 export type MethodHandler = (
   ctx: Context,
-  message: BaseMessageSchema,
+  message: AuthMessageSchema,
   messageStore: MessageStore,
   didResolver: DIDResolver) => Promise<MessageReply>;
 

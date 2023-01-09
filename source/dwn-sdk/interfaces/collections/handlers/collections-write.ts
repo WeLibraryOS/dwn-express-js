@@ -10,7 +10,7 @@ export const handleCollectionsWrite: MethodHandler = async (
   messageStore,
   didResolver
 ): Promise<MessageReply> => {
-  const collectionsWriteMessage = new CollectionsWrite(message as CollectionsWriteSchema);
+  const collectionsWriteMessage = new CollectionsWrite(message);
 
   let verificationResult;
 
