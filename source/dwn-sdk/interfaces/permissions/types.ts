@@ -53,6 +53,7 @@ export type PermissionsGrantDescriptor = {
   grantedBy: string;
   method: 'PermissionsGrant';
   permissionsRequestId?: string;
+  permissionsGrantId?: string;
   scope: PermissionScope;
 };
 

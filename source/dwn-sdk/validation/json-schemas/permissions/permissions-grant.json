@@ -9,6 +9,7 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "recordId": {"type": "string"},
     "processing": {
       "type": "object",
       "additionalProperties": false,
@@ -48,6 +49,12 @@
           "type" :"string"
         },
         "description": {
+          "type": "string"
+        },
+        "permissionsRequestId": {
+          "type": "string"
+        },
+        "permissionsGrantId": {
           "type": "string"
         },
         "grantedTo": {

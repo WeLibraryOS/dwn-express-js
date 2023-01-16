@@ -22,7 +22,6 @@ describe("test message handling", () => {
     mockDB.reset();
 
     mockDB.on(QueryCommand).resolves({
-      // TODO: use the real message data here
       Items: [{
         "descript0r_method": {
           "S": "PermissionsRequest"
